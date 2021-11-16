@@ -13,27 +13,33 @@ let board_state = [];
 //offline version - player 1(down) starts by default
 let player_move;
 
+//best leaf node found
+let best;
+//next ai move
+let ai_hole;
+
+//game object
 let game;
 
 class Game{
-    constructor(board, player1, player2) {
+    constructor(board, player1, player2, game_on) {
       this.board = board;
       this.player1 = player1;
       this.player2 = player2;
+      this.game_on = game_on;
     }
 
     startGame(){
         loadBoard();
-        console.log("board loaded");
     }
 }
 
 const initGame = () => {
-    game = new Game(board_state, 1, 420);
+    game = new Game(board_state, 1, 420, 1);
     game.startGame();
     for(let i=0; i<holes_number+1; i++){
         if(i != holes_number>>1) document.getElementById(i).addEventListener("click", () => {
-            onHoleClick(game.board, i);
+            turn(game.board, i);
         });
     }
 }
@@ -121,12 +127,13 @@ const loadBoard = () => {
     lockHoles();
 }
 
-const printNextAIMove = () => {
+const getNextAIMove = () => {
     let save_player_move = player_move;
-    nextAIMove(10);
+    calculateAIMove(5);
     player_move = save_player_move;
     setPlaying();
     console.log("nextAIMove: "+ai_hole);
+    onHoleClick(game.board, ai_hole);
 }
 
 const lockHoles = () => {
@@ -162,17 +169,16 @@ const lockHoles = () => {
     }
 }
 
-const nextAIMove = (depth) => {
+const calculateAIMove = (depth) => {
     best = -999999;
     return jjjjj_ai(board_state.slice(), 2, depth, -1);
 }
 
-let best;
-let ai_hole;
 const jjjjj_ai = (board, entity, depth, initial_hole) => {
     let board_state_saved = board.slice();
     let node_value = board[holes_number+1] - board[holes_number>>1];
     if(depth == 0 || checkBoard(board.slice(), 420)){
+        console.log("node_value: "+node_value+" ! best: "+best);
         if(node_value > best){
             best = node_value;
             ai_hole = initial_hole;
@@ -201,8 +207,27 @@ const jjjjj_ai = (board, entity, depth, initial_hole) => {
     }
 }
 
+const wait = () => {
+    console.log("ahah");
+    return;
+}
+
+const turn = async (board, id) => {
+    player_move == 1 ? onHoleClick(board, id) : null;
+    while(player_move == 2){
+        await new Promise((resolve) => {
+            setTimeout(() => {
+                resolve(getNextAIMove());
+            }, 1000);
+        });
+    }
+}
+
 //handles each game move
 const onHoleClick = (board, hole_id, entity) => {
+    //is game still on
+    if(game.game_on == 0) return;
+    //is it a valid move
     if((player_move == 1 && hole_id < holes_number>>1) || (player_move == 2 && hole_id > holes_number>>1)) return;
     //get clicked hole
     const hole = document.getElementById(hole_id);
@@ -391,15 +416,24 @@ const checkBoard = (board, entity) => {
     if(player1_empty_holes + player2_empty_holes === holes_number){
         if(left_warehouse === right_warehouse){
             if(entity == 420) return 0;
-            else alert("Draw");
+            else{
+                game.game_on = 0;
+                alert("Draw");
+            }
         }
         else if(left_warehouse > right_warehouse){
             if(entity == 420) return 2;
-            else alert("Player 2 won");
+            else{
+                game.game_on = 0;  
+                alert("Player 2 won");
+            }
         }
         else{
             if(entity == 420) return 1;
-            else alert("Player 1 won");
+            else{
+                game.game_on = 0;
+                alert("Player 1 won");
+            }
         }
     }
     //player 1 holes empty and its player 1 turn
@@ -425,15 +459,24 @@ const checkBoard = (board, entity) => {
         //veredict
         if(player1_warehouse > player2_warehouse){
             if(entity == 420) return 1;
-            else alert("Player 1 won");
+            else{
+                game.game_on = 0;
+                alert("Player 1 won");
+            }
         }
         else if(player1_warehouse < player2_warehouse){
             if(entity == 420) return 2;
-            else alert("Player 2 won");
+            else{
+                game.game_on = 0;
+                alert("Player 2 won");
+            }
         }
         else{
             if(entity == 420) return 0;
-            else alert("Draw");
+            else{
+                game.game_on = 0;
+                alert("Draw");
+            }
         }
     }
     //player 2 holes empty and its player 2 turn
@@ -460,15 +503,24 @@ const checkBoard = (board, entity) => {
         //veredict
         if(player1_warehouse > player2_warehouse){
             if(entity == 420) return 1;
-            else alert("Player 1 won");
+            else{
+                game.game_on = 0;
+                alert("Player 1 won");
+            }
         }
         else if(player1_warehouse < player2_warehouse){
             if(entity == 420) return 2;
-            else alert("Player 2 won");
+            else{
+                game.game_on = 0;
+                alert("Player 2 won");
+            }
         }
         else{
             if(entity == 420) return 0;
-            else alert("Draw");
+            else{
+                game.game_on = 0;
+                alert("Draw");
+            }
         }
     }
 }
