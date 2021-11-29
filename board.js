@@ -4,12 +4,12 @@ let holes_number = -1;
 //number of stones each hole get when the game starts 
 let initial_hole_value = -1;
 //initial player
-const initial_player = 1;
+let initial_player = 1;
 
 //array storing board current state
 let board_state = [];
 
-//defines whos playing in the specific turn
+//keeps state of whos playing in the specific turn
 //offline version - player 1(down) starts by default
 let player_move;
 
@@ -35,12 +35,20 @@ class Game{
 }
 
 const initGame = () => {
+    document.getElementById("play_popup").style.display = "none";
     game = new Game(board_state, 1, 420, 1);
     game.startGame();
     for(let i=0; i<holes_number+1; i++){
         if(i != holes_number>>1) document.getElementById(i).addEventListener("click", () => {
             turn(game.board, i);
         });
+    }
+    if(player_move == 2) turn();
+}
+
+const cleanBoard = (container) => {
+    while(container.hasChildNodes()){
+        container.removeChild(container.firstChild);
     }
 }
 
@@ -51,21 +59,17 @@ const loadBoard = () => {
     const container = document.getElementById("game_container");
 
     //cleaning up board container div
-    while(container.hasChildNodes()){
-        container.removeChild(container.firstChild);
-    }
+    cleanBoard(container);
 
     //selected number of initial holes
     holes_number = parseInt(document.getElementById("hole_number").value);
     //selected inital holes value
     initial_hole_value = parseInt(document.getElementById("hole_value").value);
 
-    //disabling click on start_game
-    document.getElementById("start_game").style.pointerEvents = 'none';
-
     //div represeting the left side warehouse
     const left_warehouse = document.createElement("div");
     left_warehouse.setAttribute("id", "left_warehouse");
+    left_warehouse.setAttribute("class", "warehouse");
     board_state[holes_number+1] = 0;
     left_warehouse.innerText = board_state[holes_number+1];
     
@@ -82,6 +86,7 @@ const loadBoard = () => {
     //div representing the right side warehouse
     const right_warehouse = document.createElement("div");
     right_warehouse.setAttribute("id", "right_warehouse");
+    right_warehouse.setAttribute("class", "warehouse");
     board_state[holes_number>>1] = 0;
     right_warehouse.innerText = board_state[holes_number>>1];
     
@@ -118,6 +123,7 @@ const loadBoard = () => {
     container.appendChild(right_warehouse);
 
     //setting initial player based on configuration
+    initial_player = Math.round(Math.random()) + 1;
     player_move = initial_player;
 
     //might change this later
@@ -129,7 +135,7 @@ const loadBoard = () => {
 
 const getNextAIMove = () => {
     let save_player_move = player_move;
-    calculateAIMove(5);
+    calculateAIMove(7);
     player_move = save_player_move;
     setPlaying();
     console.log("nextAIMove: "+ai_hole);
@@ -174,11 +180,11 @@ const calculateAIMove = (depth) => {
     return jjjjj_ai(board_state.slice(), 2, depth, -1);
 }
 
+//for some reason (that i dont understand) depth 7 plays better than depth 10...
 const jjjjj_ai = (board, entity, depth, initial_hole) => {
     let board_state_saved = board.slice();
     let node_value = board[holes_number+1] - board[holes_number>>1];
     if(depth == 0 || checkBoard(board.slice(), 420)){
-        console.log("node_value: "+node_value+" ! best: "+best);
         if(node_value > best){
             best = node_value;
             ai_hole = initial_hole;
@@ -188,6 +194,7 @@ const jjjjj_ai = (board, entity, depth, initial_hole) => {
     else if(entity == 2){
         for(let i=0; i<holes_number>>1; i++){
             if(board[i] != 0){
+                player_move = entity;
                 onHoleClick(board, i, 420);
                 jjjjj_ai(board, player_move, depth-1, initial_hole == -1 ? i : initial_hole);
                 board = board_state_saved.slice();
@@ -198,6 +205,7 @@ const jjjjj_ai = (board, entity, depth, initial_hole) => {
     else{
         for(let i=holes_number; i>holes_number>>1; i--){
             if(board[i] != 0){
+                player_move = entity;
                 onHoleClick(board, i, 420);
                 jjjjj_ai(board, player_move, depth-1, initial_hole == -1 ? i : initial_hole);
                 board = board_state_saved.slice();
@@ -207,18 +215,13 @@ const jjjjj_ai = (board, entity, depth, initial_hole) => {
     }
 }
 
-const wait = () => {
-    console.log("ahah");
-    return;
-}
-
 const turn = async (board, id) => {
     player_move == 1 ? onHoleClick(board, id) : null;
-    while(player_move == 2){
+    while(player_move == 2 && game.game_on == 1){
         await new Promise((resolve) => {
             setTimeout(() => {
                 resolve(getNextAIMove());
-            }, 1000);
+            }, 2000);
         });
     }
 }
@@ -551,4 +554,6 @@ const resetBoard = () => {
     setPlaying();
 
     document.getElementById("start_game").style.pointerEvents = 'auto';
+
+    initial_player == 1 ? initial_player = 2 : initial_player = 1;
 }

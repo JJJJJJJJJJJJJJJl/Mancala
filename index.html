@@ -1,40 +1,67 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <style>
-            body {
-              background-color: black;
-              color: linen;
-            }
-        
-        </style>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="stylesheet" href="board.css">
         <title>Mancala</title>
     </head>
     <body>
-        <h1>Logotipo - mancala</h1>
-        <div id="configs">
-            <h4>Configuracoes do jogo</h4>
-            <form id="configs_form">
-                <label for="hole_number">Number of total holes</label>
-                <select id="hole_number" name="hole_number">
-                    <option value="10">10</option>
-                    <option value="12">12</option>
-                </select>
-                <label for="hole_value">Initial holes value</label>
-                <select id="hole_value" name="hole_value">
-                    <option value="1">1</option>
-                    <option value="3">3</option>
-                    <option value="5">5</option>
-                </select>
-            </form>
+        <div id="menu">
+            <div class="logo">
+                <!-- <img src="https://c.tenor.com/0jADTGQQEVQAAAAi/playboy-bunny.gif" id="playboy_logo"> -->
+                <img src="playboy.png" id="playboy_logo">
+                Mancala
+            </div>
+            
+            <div class="menu_option" id="rules_button">Rules</div>
+            <div class="menu_option" id="scoreboard_button">Scoreboard</div>
+            <div class="menu_option" id="profile_button">Profile</div>
+            <div class="menu_option" id="login_button">Login</div>
+            <div class="menu_option" id="register_button">Register</div>
         </div>
-        <h3 id="start_game" onclick="initGame()">START GAME</h3>
-        <h3 id="reset_game" onclick="resetBoard()">RESET BOARD</h3>
-        <p id="playing"></p>
-        <div id="game_container">
-
+        <div id="rules_popup" class="rules_popup">
+            <div class="popup_content">
+              <span class="rules close">&times;</span>
+              <p>Jogadores semeiam as suas sementes alternadamente</p>
+              <p>Na sua vez semeiam a partir de uma das suas cavidades</p>
+              <p>Consoante a situação da última semente semeada, podem: <br> &emsp; - voltar a jogar <br> &emsp; - ficar com algumas sementes do adversário</p>
+              <p>Termina quando um dos jogadores fica sem sementes</p>
+            </div>
         </div>
+        <div id="play_popup" class="play_popup">
+            <div class="popup_content">
+              <span class="play close">&times;</span>
+              <div class="game_configs">
+                  <form id="configs_form">
+                      <label for="hole_number">Holes</label>
+                      <select id="hole_number" name="hole_number">
+                          <option value="10">10</option>
+                          <option value="12">12</option>
+                        </select>
+                        <label for="hole_value">Value</label>
+                        <select id="hole_value" name="hole_value">
+                            <option value="1">1</option>
+                            <option value="3">3</option>
+                            <option value="5">5</option>
+                        </select>
+                    </form>
+                    <div id="play"><p>START GAME</p></div>
+            </div>
+            </div>
+        </div>
+        <div class="game_content">
+            <div class="game_setters">
+                <h3 id="start_game">PLAY</h3>
+                <h3 id="reset_game" onclick="resetBoard()">RESET BOARD</h3>
+                <p id="playing"></p>
+            </div>
+            <div id="universe">
+                <div id="game_container"></div>
+            </div>
+        </div>
+        <footer>∞ JJJJJJ ∞</footer>
         <script src="board.js"></script>
+        <script src="interface.js"></script>
     </body>
 </html>
