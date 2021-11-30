@@ -6,10 +6,9 @@
         <link rel="stylesheet" href="board.css">
         <title>Mancala</title>
     </head>
-    <body>
+    <body class="unselectable">
         <div id="menu">
             <div class="logo">
-                <!-- <img src="https://c.tenor.com/0jADTGQQEVQAAAAi/playboy-bunny.gif" id="playboy_logo"> -->
                 <img src="playboy.png" id="playboy_logo">
                 Mancala
             </div>
@@ -23,10 +22,13 @@
         <div id="rules_popup" class="rules_popup">
             <div class="popup_content">
               <span class="rules close">&times;</span>
-              <p>Jogadores semeiam as suas sementes alternadamente</p>
-              <p>Na sua vez semeiam a partir de uma das suas cavidades</p>
-              <p>Consoante a situação da última semente semeada, podem: <br> &emsp; - voltar a jogar <br> &emsp; - ficar com algumas sementes do adversário</p>
-              <p>Termina quando um dos jogadores fica sem sementes</p>
+              <!-- ty https://harriscenter.org/wp-content/uploads/2020/03/mancala_rules.pdf <3 *-* -->
+              <p>Pieces move around the board, one by one landing in the next hole, in a counter-clockwise circle</p>
+              <p>The warehouse on your right belongs to you. That is where you keep the pieces you've collected so far</p>
+              <p>The X bottom holes are your holes</p>
+              <p>Your move will skip the opponents warehouse</p>
+              <p>You'll have a consecutive turn if: <br> &emsp; - the last piece in your hand lands in your warehouse <br> &emsp; - the last piece in your hand lands in one of your own empty holes, you also collect that last piece plus the pieces in the opponents opposite hole back to your warehouse</p>
+              <p>The game is over when one player’s holes are completely empty, the pieces on whatever player holes are collected to that player warehouse</p>
             </div>
         </div>
         <div id="play_popup" class="play_popup">
@@ -53,7 +55,7 @@
         <div class="game_content">
             <div class="game_setters">
                 <h3 id="start_game">PLAY</h3>
-                <h3 id="reset_game" onclick="resetBoard()">RESET BOARD</h3>
+                <h3 id="reset_game">RESET BOARD</h3>
                 <p id="playing"></p>
             </div>
             <div id="universe">

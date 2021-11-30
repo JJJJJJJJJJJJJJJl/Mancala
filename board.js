@@ -40,7 +40,7 @@ const initGame = () => {
     game.startGame();
     for(let i=0; i<holes_number+1; i++){
         if(i != holes_number>>1) document.getElementById(i).addEventListener("click", () => {
-            turn(game.board, i);
+            turn(i);
         });
     }
     if(player_move == 2) turn();
@@ -79,9 +79,9 @@ const loadBoard = () => {
 
     //divs represeting each either up or down hole
     const up_holes = document.createElement("div");
-    up_holes.setAttribute("class", "up_holes");
+    up_holes.setAttribute("id", "up_holes");
     const down_holes = document.createElement("div");
-    down_holes.setAttribute("class", "down_holes");
+    down_holes.setAttribute("id", "down_holes");
     
     //div representing the right side warehouse
     const right_warehouse = document.createElement("div");
@@ -215,8 +215,8 @@ const jjjjj_ai = (board, entity, depth, initial_hole) => {
     }
 }
 
-const turn = async (board, id) => {
-    player_move == 1 ? onHoleClick(board, id) : null;
+const turn = async (id) => {
+    player_move == 1 ? onHoleClick(game.board, id, 1) : null;
     while(player_move == 2 && game.game_on == 1){
         await new Promise((resolve) => {
             setTimeout(() => {
@@ -290,11 +290,11 @@ const onHoleClick = (board, hole_id, entity) => {
         }
         //*cur_hole* hole was reached and its value is incremented by one 
         else{
-            const value = entity === 420 ? board[cur_hole] : parseInt(document.getElementById(cur_hole).innerText);
+            const value = board[cur_hole];
 
             //when player 2 last iteration move lands on one of its own side empty hole
             //he then gets that last piece plus the opponent opposite hole pieces on his warehouse (left)
-            if(i === hole_value-1 && value === 0 && cur_hole < holes_number>>1 && player_move === 2){
+            if(i === hole_value-1 && value === 0 && cur_hole < holes_number>>1 && player_move == 2){
                 //player 2 plays next turn aswell
                 switch_player = 0;
                 
@@ -318,7 +318,7 @@ const onHoleClick = (board, hole_id, entity) => {
             }
             //when player 1 last iteration move lands on one of its own side empty hole
             //he then gets that last piece plus the opponent opposite hole pieces on his warehouse (right)
-            else if(i === hole_value-1 && value === 0 && cur_hole > holes_number>>1 && player_move === 1){
+            else if(i === hole_value-1 && value === 0 && cur_hole > holes_number>>1 && player_move == 1){
                 //player 1 plays next turn aswell
                 switch_player = 0;
 
@@ -356,7 +356,7 @@ const onHoleClick = (board, hole_id, entity) => {
         //a move might iterate more than the *hole_value* (when it skips the opponent warehouse)
         //also if a move iteration goes through the clicked hole the value isnt decreased (only increased) {if i get confused coming back to this later, visualizing this case helps a lot}
         if(board[hole_id] > 0 && cur_hole+1 !== hole_id){
-            if(entity === 420){
+            if(entity == 420){
                 board[hole_id]--;
             }
             else{
@@ -365,30 +365,41 @@ const onHoleClick = (board, hole_id, entity) => {
             }
         }
         //cur_hole reached -1 value that means left warehouse
-        if(cur_hole === -1){
+        if(cur_hole == -1){
             cur_hole = holes_number + 1;
         }
     }
 
-    switch_player === 1 ? switchPlayer() : null;
+    switch_player === 1 ? (entity == 420 ? switchPlayer(420) : switchPlayer()) : null;
     if(entity != 420){
         lockHoles();
         checkBoard(board, 1);
     }
 }
 
-const setPlaying = () => {
+const setPlaying = (j) => {
+    //ai stuff..no need to affect visuals
+    if(j == 420) return;
+
     document.getElementById("playing").innerText = "Playing: Player " + player_move;
+    if(player_move == 1){
+        document.getElementById("down_holes").style.borderBottomColor = "rgba(122, 27, 153, 0.39)";
+        document.getElementById("up_holes").style.borderTopColor = "rgba(246, 191, 240, 0.548)"
+    }
+    else{
+        document.getElementById("up_holes").style.borderTopColor = "rgba(122, 27, 153, 0.39)";
+        document.getElementById("down_holes").style.borderBottomColor = "rgba(246, 191, 240, 0.548)"
+    }
 }
 
-const switchPlayer = () => {
+const switchPlayer = (entity) => {
     if(player_move === 1){
         player_move = 2; 
-        setPlaying();
+        setPlaying(entity);
     }
     else{
         player_move = 1;
-        setPlaying();
+        setPlaying(entity);
     }
 }
 
@@ -529,9 +540,6 @@ const checkBoard = (board, entity) => {
 }
 
 const resetBoard = () => {
-    //player 1 starts by default
-    player_move = 1;
-
     //reseting left warehouse
     board_state[holes_number+1] = 0;
     document.getElementById("left_warehouse").innerText = 0;
