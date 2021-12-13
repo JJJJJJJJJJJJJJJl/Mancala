@@ -178,33 +178,47 @@ const setPieceSize = (piece, hole_value) => {
 }
 
 const displayPieces = () => {
+    let hole_pieces_area;
+
     for(let i=0; i<=game.holes_number; i++){
         if(i != game.holes_number>>1){
             for(let j=0; j<game.board[i]; j++){
-                addPiece("hole_pieces_" + i, 1, game.board[i]);
+                hole_pieces_area = document.getElementById("hole_pieces_" + i);
+                addPiece(hole_pieces_area, 1, game.board[i]);
             }
         }
     }
 }
 
-const cleanPieces = (container) => {
-    const pieces_area = document.getElementById(container);
+const cleanPieces = (pieces_area) => {
     while(pieces_area.hasChildNodes()){
         pieces_area.removeChild(pieces_area.firstChild);
     }
 }
 
-const addPiece = (container, value_to_add, value) => {
-    const pieces_area = document.getElementById(container);
-    const pieces_area_height = pieces_area.offsetHeight;
-    const pieces_area_width = pieces_area.offsetWidth;
+const cleanBoardPieces = () => {
+    //cleaning left warehouse
+    cleanPieces(document.getElementById("left_warehouse_pieces_area"));
+    //cleaning right warehouse
+    cleanPieces(document.getElementById("right_warehouse_pieces_area"));
+    //cleaning holes
+    let hole_pieces_area;
+    for(let i=0; i<=game.holes_number; i++){
+        if(i != game.holes_number>>1){
+            hole_pieces_area = document.getElementById("hole_pieces_" + i);
+            cleanPieces(hole_pieces_area);
+        }
+    }
+}
+
+const addPiece = (pieces_area, value_to_add, value) => {
     let piece; 
     for(let i=0; i<value_to_add; i++){
         piece = document.createElement("div");
         piece.setAttribute("class", "piece");
         setPieceSize(piece, value);
-        piece.style.left = randomInterval(10, pieces_area_width-30).toString()+"px";
-        piece.style.top = randomInterval(10, pieces_area_height-30).toString()+"px";
+        piece.style.left = randomInterval(10, pieces_area.offsetWidth-30).toString()+"px";
+        piece.style.top = randomInterval(10, pieces_area.offsetHeight-30).toString()+"px";
         pieces_area.appendChild(piece);
     }
 
@@ -220,34 +234,42 @@ const getNextAIMove = () => {
 }
 
 const lockHoles = () => {
+    let hole; 
+
     //unlocking player 1 holes/locking player 2 holes
     if(game.player_move === 1){
         for(let i=game.holes_number; i>game.holes_number>>1; i--){
+            hole = document.getElementById(i);
+
             //only make it clickable if value isnt 0
-            if(parseInt(document.getElementById(i).innerText) !== 0){
-                document.getElementById(i).style.pointerEvents = 'auto';
+            if(parseInt(hole.innerText) !== 0){
+                hole.style.pointerEvents = 'auto';
             }
             else{
-                document.getElementById(i).style.pointerEvents = 'none';
+                hole.style.pointerEvents = 'none';
             }
         }
         for(let i=0; i<game.holes_number>>1; i++){
-            document.getElementById(i).style.pointerEvents = 'none';
+            hole = document.getElementById(i);
+            hole.style.pointerEvents = 'none';
         }
     }
     //unlocking player 2 holes/locking player 1 holes
     else{
         for(let i=0; i<game.holes_number>>1; i++){
+            hole = document.getElementById(i);
+
             //only make it clickable if value isnt 0
-            if(parseInt(document.getElementById(i).innerText) !== 0){
-                document.getElementById(i).style.pointerEvents = 'auto';
+            if(parseInt(hole.innerText) !== 0){
+                hole.style.pointerEvents = 'auto';
             }
             else{
-                document.getElementById(i).style.pointerEvents = 'none';
+                hole.style.pointerEvents = 'none';
             }
         }
         for(let i=game.holes_number; i>game.holes_number>>1; i--){
-            document.getElementById(i).style.pointerEvents = 'none';
+            hole = document.getElementById(i);
+            hole.style.pointerEvents = 'none';
         }
     }
 }
@@ -267,10 +289,6 @@ const jjjjj_ai = (board, entity, depth, initial_hole) => {
         checkBoard(board.slice(), 420) == 1 ||
         checkBoard(board.slice(), 420) == 2)
     {
-        /* if(node_value > best){
-            best = node_value;
-            ai_hole = initial_hole;
-        } */
         let leaf = {value: node_value, hole: 0};
         return leaf;
     }
@@ -355,11 +373,11 @@ const onHoleClick = (board, hole_id, entity) => {
     //is it a valid move
     if((game.player_move == 1 && hole_id < game.holes_number>>1) || (game.player_move == 2 && hole_id > game.holes_number>>1)) return;
     //clicked hole p element that contains the current value
-    const p_hole = document.getElementById("hole_value_"+hole_id);
-    //clean hole pieces
-    if(entity != 420) cleanPieces("hole_pieces_" + hole_id);
+    const clicked_hole_p_value = document.getElementById("hole_value_"+hole_id);
+    //clean clicked hole pieces
+    if(entity != 420) cleanPieces(document.getElementById("hole_pieces_"+hole_id));
     //get hole current value
-    const hole_value = entity == 420 ? board[parseInt(hole_id)] : parseInt(p_hole.innerText);
+    const hole_value = entity == 420 ? board[parseInt(hole_id)] : parseInt(clicked_hole_p_value.innerText);
     //get next hole index
     let cur_hole = parseInt(hole_id) == 0 ? game.holes_number + 1 : parseInt(hole_id) - 1;
     //does it switch player after the move
@@ -384,13 +402,16 @@ const onHoleClick = (board, hole_id, entity) => {
                     board[cur_hole--]++;
                 }
                 else{
-                    const value = board[game.holes_number+1];
+                    const left_warehouse_value = board[game.holes_number+1];
+                    const left_warehouse_p_value = document.getElementById("left_warehouse_value");
+                    const left_warehouse_pieces_area = document.getElementById("left_warehouse_pieces_area");
+
                     //updating ui
-                    document.getElementById("left_warehouse_value").innerText = value + 1;
+                    left_warehouse_p_value.innerText = left_warehouse_value + 1;
                     //updating board struct
-                    board[cur_hole] = value + 1;
+                    board[cur_hole] = left_warehouse_value + 1;
                     //adding piece to warehouse
-                    addPiece("left_warehouse_pieces_area", 1, board[cur_hole--]);
+                    addPiece(left_warehouse_pieces_area, 1, board[cur_hole--]);
                 }
             }
         }
@@ -412,13 +433,16 @@ const onHoleClick = (board, hole_id, entity) => {
                     board[cur_hole--]++;
                 }
                 else{
-                    const value = board[game.holes_number>>1];
+                    const right_warehouse_value = board[game.holes_number>>1];
+                    const right_warehouse_p_value = document.getElementById("right_warehouse_value");
+                    const right_warehouse_pieces_area = document.getElementById("right_warehouse_pieces_area");
+
                     //updaing ui
-                    document.getElementById("right_warehouse_value").innerText = value + 1;
+                    right_warehouse_p_value.innerText = right_warehouse_value + 1;
                     //updating board struct
-                    board[cur_hole] = value + 1;
+                    board[cur_hole] = right_warehouse_value + 1;
                     //adding piece to warehouse
-                    addPiece("right_warehouse_pieces_area", 1, board[cur_hole--]);
+                    addPiece(right_warehouse_pieces_area, 1, board[cur_hole--]);
                 }
             }
         }
@@ -440,22 +464,28 @@ const onHoleClick = (board, hole_id, entity) => {
                 }
 
                 else{
-                    const warehouse_value = board[game.holes_number+1];
-                    const opponent_opposite_hole_value = board[game.holes_number-cur_hole];
+                    const left_warehouse_value = board[game.holes_number+1];
+                    const left_warehouse_p_value = document.getElementById("left_warehouse_value");
+                    const left_warehouse_pieces_area = document.getElementById("left_warehouse_pieces_area");
+                    const opposite_hole_value = board[game.holes_number-cur_hole];
+                    const opposite_hole_p_value = document.getElementById("hole_value_" + (game.holes_number-cur_hole));
+                    const opposite_hole_pieces_area = document.getElementById("hole_pieces_" + (game.holes_number-cur_hole));
+                    const hole_p_value = document.getElementById("hole_value_" + cur_hole);
 
-                    //updating ui and board struct
-                    document.getElementById("hole_value_" + (game.holes_number-cur_hole)).innerText = 0;
+                    //updating ui
+                    opposite_hole_p_value.innerText = 0;
+                    hole_p_value.innerText = 0;
+                    left_warehouse_p_value.innerText = left_warehouse_value + opposite_hole_value + 1;
+                    //updating board struct
                     board[game.holes_number-cur_hole] = 0;
-                    document.getElementById("hole_value_" + cur_hole).innerText = 0;
-                    board[cur_hole] = 0;                
-                    document.getElementById("left_warehouse_value").innerText = warehouse_value + opponent_opposite_hole_value + 1;
-                    board[game.holes_number+1] = warehouse_value + opponent_opposite_hole_value + 1;
+                    board[cur_hole--] = 0;                
+                    board[game.holes_number+1] = left_warehouse_value + opposite_hole_value + 1;
 
-                    //adding pieces to warehouse
-                    addPiece("left_warehouse_pieces_area", opponent_opposite_hole_value + 1, board[game.holes_number+1]);
+                    //adding pieces to warehouse§
+                    addPiece(left_warehouse_pieces_area, opposite_hole_value + 1, board[game.holes_number+1]);
 
                     //cleaning pieces of opposite hole
-                    cleanPieces("hole_pieces_" + (game.holes_number-(cur_hole--)));
+                    cleanPieces(opposite_hole_pieces_area);
                 }
             }
             //when player 1 last iteration move lands on one of its own side empty hole
@@ -471,22 +501,28 @@ const onHoleClick = (board, hole_id, entity) => {
                 }
 
                 else{
-                    const warehouse_value = board[game.holes_number>>1];
-                    const opponent_opposite_hole_value = board[game.holes_number-cur_hole]; //CHECK IF NO ERRORS
+                    const right_warehouse_value = board[game.holes_number>>1];
+                    const right_warehouse_p_value = document.getElementById("right_warehouse_value");
+                    const right_warehouse_pieces_area = document.getElementById("right_warehouse_pieces_area");
+                    const opposite_hole_value = board[game.holes_number-cur_hole];
+                    const opposite_hole_p_value = document.getElementById("hole_value_" + (game.holes_number-cur_hole));
+                    const opposite_hole_pieces_area = document.getElementById("hole_pieces_" + (game.holes_number-cur_hole));
+                    const hole_p_value = document.getElementById("hole_value_" + cur_hole);
     
-                    //updating ui and board struct
-                    document.getElementById("hole_value_" + (game.holes_number-cur_hole)).innerText = 0;
+                    //updating ui
+                    opposite_hole_p_value.innerText = 0;
+                    hole_p_value.innerText = 0;
+                    right_warehouse_p_value.innerText = right_warehouse_value + opposite_hole_value + 1;
+                    //updating board struct
                     board[game.holes_number-cur_hole] = 0;
-                    document.getElementById("hole_value_" + cur_hole).innerText = 0;
-                    board[cur_hole] = 0;
-                    document.getElementById("right_warehouse_value").innerText = warehouse_value + opponent_opposite_hole_value + 1;
-                    board[game.holes_number>>1] = warehouse_value + opponent_opposite_hole_value + 1;
+                    board[cur_hole--] = 0;
+                    board[game.holes_number>>1] = right_warehouse_value + opposite_hole_value + 1;
 
                     //adding pieces to warehouse
-                    addPiece("right_warehouse_pieces_area", opponent_opposite_hole_value + 1, board[game.holes_number>>1]);
+                    addPiece(right_warehouse_pieces_area, opposite_hole_value + 1, board[game.holes_number>>1]);
 
                     //cleaning pieces of opposite hole
-                    cleanPieces("hole_pieces_" + (game.holes_number-(cur_hole--)));
+                    cleanPieces(opposite_hole_pieces_area);
                 }
             }
             //regular move
@@ -495,13 +531,16 @@ const onHoleClick = (board, hole_id, entity) => {
                     board[cur_hole--]++;
                 }
                 else{
+                    const hole_p_value = document.getElementById("hole_value_" + cur_hole);
+                    const hole_pieces_area = document.getElementById("hole_pieces_" + cur_hole);
+
                     //updating ui
-                    document.getElementById("hole_value_" + cur_hole).innerText = value + 1;
+                    hole_p_value.innerText = value + 1;
                     //updating board struct
                     board[cur_hole] = value + 1;
 
                     //adding piece to hole
-                    addPiece("hole_pieces_" + cur_hole, 1, board[cur_hole--]);
+                    addPiece(hole_pieces_area, 1, board[cur_hole--]);
                 }
             }
         }
@@ -514,7 +553,7 @@ const onHoleClick = (board, hole_id, entity) => {
                 board[hole_id]--;
             }
             else{
-                p_hole.innerText = parseInt(p_hole.innerText) - 1;
+                clicked_hole_p_value.innerText = parseInt(clicked_hole_p_value.innerText) - 1;
                 board[hole_id]--;
             }
         }
@@ -535,14 +574,18 @@ const setPlaying = (entity) => {
     //ai stuff..no need to affect visuals
     if(entity == 420) return;
 
-    document.getElementById("playing").innerText = "Playing: Player " + game.player_move;
+    const playing = document.getElementById("playing");
+    const up_holes = document.getElementById("up_holes");
+    const down_hole = document.getElementById("down_holes");
+
+    playing.innerText = "Playing: Player " + game.player_move;
     if(game.player_move == 1){
-        document.getElementById("down_holes").style.borderBottomColor = "rgba(122, 27, 153, 0.39)";
-        document.getElementById("up_holes").style.borderTopColor = "rgba(246, 191, 240, 0.548)"
+        up_holes.style.borderTopColor = "rgba(246, 191, 240, 0.548)"
+        down_hole.style.borderBottomColor = "rgba(122, 27, 153, 0.39)";
     }
     else{
-        document.getElementById("up_holes").style.borderTopColor = "rgba(122, 27, 153, 0.39)";
-        document.getElementById("down_holes").style.borderBottomColor = "rgba(246, 191, 240, 0.548)"
+        up_holes.style.borderTopColor = "rgba(122, 27, 153, 0.39)";
+        down_hole.style.borderBottomColor = "rgba(246, 191, 240, 0.548)"
     }
 }
 
@@ -559,8 +602,8 @@ const switchPlayer = (entity) => {
 
 //called after each move, checks board state
 const checkBoard = (board, entity) => {
-    const left_warehouse = board[game.holes_number+1];
-    const right_warehouse = board[game.holes_number>>1];
+    const left_warehouse_value = board[game.holes_number+1];
+    const right_warehouse_value = board[game.holes_number>>1];
 
     let player1_empty_holes = 0;
     let player2_empty_holes = 0;
@@ -582,14 +625,14 @@ const checkBoard = (board, entity) => {
 
     //all holes empty
     if(player1_empty_holes + player2_empty_holes === game.holes_number){
-        if(left_warehouse === right_warehouse){
+        if(left_warehouse_value === right_warehouse_value){
             if(entity == 420) return 0;
             else{
                 game.game_on = 0;
                 alert("Draw");
             }
         }
-        else if(left_warehouse > right_warehouse){
+        else if(left_warehouse_value > right_warehouse_value){
             if(entity == 420) return 2;
             else{
                 game.game_on = 0;  
@@ -620,9 +663,12 @@ const checkBoard = (board, entity) => {
             player2_warehouse = board[game.holes_number+1];
         }
         else{
+            const left_warehouse_p_value = document.getElementById("left_warehouse_value");
+            const left_warehouse_pieces_area = document.getElementById("left_warehouse_pieces_area");
+
             player2_warehouse = board[game.holes_number+1] + pieces;
-            document.getElementById("left_warehouse_value").innerText = player2_warehouse;
-            addPiece("left_warehouse_pieces_area", pieces, player2_warehouse);
+            left_warehouse_p_value.innerText = player2_warehouse;
+            addPiece(left_warehouse_pieces_area, pieces, player2_warehouse);
             player1_warehouse = board[game.holes_number>>1];
         }
         //veredict
@@ -665,9 +711,12 @@ const checkBoard = (board, entity) => {
             player2_warehouse = board[game.holes_number+1];
         }
         else{
+            const right_warehouse_p_value = document.getElementById("right_warehouse_value");
+            const right_warehouse_pieces_area = document.getElementById("right_warehouse_pieces_area");
+
             player1_warehouse = board[game.holes_number>>1] + pieces;
-            document.getElementById("right_warehouse_value").innerText = player1_warehouse;
-            addPiece("right_warehouse_pieces_area", pieces, player1_warehouse);
+            right_warehouse_p_value.innerText = player1_warehouse;
+            addPiece(right_warehouse_pieces_area, pieces, player1_warehouse);
             player2_warehouse = board[game.holes_number+1];
         }
         //veredict
@@ -696,13 +745,16 @@ const checkBoard = (board, entity) => {
 }
 
 const resetBoard = () => {
+    const left_warehouse_p_value = document.getElementById("left_warehouse_value");
+    const right_warehouse_p_value = document.getElementById("right_warehouse_value");
+
     //reseting left warehouse
     game.board[game.holes_number+1] = 0;
-    document.getElementById("left_warehouse_value").innerText = 0;
+    left_warehouse_p_value.innerText = 0;
 
     //reseting right warehouse
     game.board[game.holes_number>>1] = 0;
-    document.getElementById("right_warehouse_value").innerText = 0;
+    right_warehouse_p_value.innerText = 0;
 
     //reseting holes
     for(let i=0; i<game.holes_number+1; i++){
@@ -711,6 +763,7 @@ const resetBoard = () => {
             document.getElementById(i).innerText = game.holes_value;
         }
     }
+    cleanBoardPieces();
 
     lockHoles();
 
