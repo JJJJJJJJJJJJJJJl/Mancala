@@ -167,14 +167,8 @@ const randomInterval = (min, max) => {
 }
 
 const setPieceSize = (piece, hole_value) => {
-    if(hole_value <= 17){
-        piece.style.height = "0.8vh";
-        piece.style.width = "0.8vh";
-    }
-    else{
-        piece.style.height = "0.6vh";
-        piece.style.width = "0.6vh";
-    }
+    piece.style.height = "2.5vh";
+    piece.style.width = "2.5vh";
 }
 
 const displayPieces = () => {
@@ -190,35 +184,30 @@ const displayPieces = () => {
     }
 }
 
-const cleanPieces = (pieces_area) => {
-    while(pieces_area.hasChildNodes()){
-        pieces_area.removeChild(pieces_area.firstChild);
-    }
-}
-
 const cleanBoardPieces = () => {
     //cleaning left warehouse
-    cleanPieces(document.getElementById("left_warehouse_pieces_area"));
+    cleanDiv(document.getElementById("left_warehouse_pieces_area"));
     //cleaning right warehouse
-    cleanPieces(document.getElementById("right_warehouse_pieces_area"));
+    cleanDiv(document.getElementById("right_warehouse_pieces_area"));
     //cleaning holes
     let hole_pieces_area;
     for(let i=0; i<=game.holes_number; i++){
         if(i != game.holes_number>>1){
             hole_pieces_area = document.getElementById("hole_pieces_" + i);
-            cleanPieces(hole_pieces_area);
+            cleanDiv(hole_pieces_area);
         }
     }
 }
 
 const addPiece = (pieces_area, value_to_add, value) => {
-    let piece; 
+    let piece;
+
     for(let i=0; i<value_to_add; i++){
         piece = document.createElement("div");
         piece.setAttribute("class", "piece");
         setPieceSize(piece, value);
-        piece.style.left = randomInterval(10, pieces_area.offsetWidth-30).toString()+"px";
-        piece.style.top = randomInterval(10, pieces_area.offsetHeight-30).toString()+"px";
+        piece.style.left = randomInterval(10, pieces_area.offsetWidth-50).toString()+"px";
+        piece.style.top = randomInterval(10, pieces_area.offsetHeight-50).toString()+"px";
         pieces_area.appendChild(piece);
     }
 
@@ -280,7 +269,7 @@ const calculateAIMove = (depth) => {
     return move.hole;
 }
 
-//this version which is the minimax in its truest form plays so bad...mine (below this one) player a lot better
+//this version which is the minimax in its truest form
 const jjjjj_ai = (board, entity, depth, initial_hole) => {
     let board_state_saved = board.slice();
     let node_value = board[game.holes_number+1] - board[game.holes_number>>1];
@@ -320,6 +309,7 @@ const jjjjj_ai = (board, entity, depth, initial_hole) => {
     }
 }
 
+//minimax a lil modified lol
 //for some reason (that i dont understand) depth 7 plays better than depth 10...
 /* const jjjjj_ai = (board, entity, depth, initial_hole) => {
     let board_state_saved = board.slice();
@@ -375,7 +365,7 @@ const onHoleClick = (board, hole_id, entity) => {
     //clicked hole p element that contains the current value
     const clicked_hole_p_value = document.getElementById("hole_value_"+hole_id);
     //clean clicked hole pieces
-    if(entity != 420) cleanPieces(document.getElementById("hole_pieces_"+hole_id));
+    if(entity != 420) cleanDiv(document.getElementById("hole_pieces_"+hole_id));
     //get hole current value
     const hole_value = entity == 420 ? board[parseInt(hole_id)] : parseInt(clicked_hole_p_value.innerText);
     //get next hole index
@@ -485,7 +475,7 @@ const onHoleClick = (board, hole_id, entity) => {
                     addPiece(left_warehouse_pieces_area, opposite_hole_value + 1, board[game.holes_number+1]);
 
                     //cleaning pieces of opposite hole
-                    cleanPieces(opposite_hole_pieces_area);
+                    cleanDiv(opposite_hole_pieces_area);
                 }
             }
             //when player 1 last iteration move lands on one of its own side empty hole
@@ -522,7 +512,7 @@ const onHoleClick = (board, hole_id, entity) => {
                     addPiece(right_warehouse_pieces_area, opposite_hole_value + 1, board[game.holes_number>>1]);
 
                     //cleaning pieces of opposite hole
-                    cleanPieces(opposite_hole_pieces_area);
+                    cleanDiv(opposite_hole_pieces_area);
                 }
             }
             //regular move

@@ -43,12 +43,16 @@
 }
 
 .pieces{
-    height: 5vw;
+    height: 80%;
+    overflow: hidden;
+    position: relative;
 }
 
 .piece{
-    background-color: red;
-    position:relative;
+    background: radial-gradient(circle at center, rgba(246, 191, 240), rgb(248, 156, 237), rgb(243, 120, 229));
+    /* background-color: red; */
+    position:absolute;
+    border-radius: 50%;
 }
 
 #up_holes{
