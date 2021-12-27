@@ -5,21 +5,30 @@ body {
     margin: 0;
 }
 
-.rules_popup {
-    display: none;
-    position: absolute;
-    z-index: 1;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(246, 191, 240, 0.39);
+#register_input{
+    display: flex;
+    flex-direction: column;
 }
 
-.rules_popup:active{
-    transition: background-color 0.3s ease;
+#register_input textarea{
+    height: 2vh;
+    width: 20vw;
+    resize: none;
 }
 
-.play_popup {
+#submit{
+    background-color: rgba(240, 108, 174, 0.39);
+    padding: 1vh;
+    margin-top: 1vh;
+    width: 5vw;
+    text-align: center;
+}
+
+#submit:hover{
+    cursor: pointer;
+}
+
+.popup {
     display: none;
     position: absolute;
     z-index: 1;

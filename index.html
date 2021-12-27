@@ -20,7 +20,7 @@
             <div class="menu_option" id="login_button">Login</div>
             <div class="menu_option" id="register_button">Register</div>
         </div>
-        <div id="rules_popup" class="rules_popup">
+        <div id="rules_popup" class="popup">
             <div class="popup_content">
               <span class="close">&times;</span>
               <!-- ty https://harriscenter.org/wp-content/uploads/2020/03/mancala_rules.pdf <3 *-* -->
@@ -32,7 +32,7 @@
               <p>The game is over when one player’s holes are completely empty, the pieces on whatever player holes are collected to that player warehouse</p>
             </div>
         </div>
-        <div id="play_popup" class="play_popup">
+        <div id="play_popup" class="popup">
             <div class="popup_content">
               <span class="close">&times;</span>
               <div class="game_configs">
@@ -53,6 +53,18 @@
             </div>
             </div>
         </div>
+        <div id="register_popup" class="popup">
+            <div class="popup_content">
+              <span class="close">&times;</span>
+              <div id="register_input">
+                  <p>username</p>
+                  <textarea id="username"></textarea>
+                  <p>password</p>
+                  <textarea id="password"></textarea>
+                  <div id="submit">submit</div>
+              </div>
+            </div>
+        </div>
         <div class="game_content">
             <div class="game_setters">
                 <h3 id="play_button">&#x1F987; PLAY &#x1F987;</h3>
@@ -66,6 +78,7 @@
         <footer>∞ JJJJJJ ∞</footer>
         <script src="board.js"></script>
         <script src="interface.js"></script>
+        <script src="register.js"></script>
         <script src="server.js"></script>
     </body>
 </html>
