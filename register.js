@@ -3,15 +3,18 @@ const username = document.getElementById("username");
 const password = document.getElementById("password");
 
 submit.onclick = () => {
-    check_username(username.value);
-    check_password(password.value);
-}
-
-const check_username = (username) => {
-    if(username.length < 4 || username.length > 12){
-        alert("invalid username: length should be between 4 and 12 characters");
-        clean_input();
-    }
+    fetch("http://localhost:8080/register", {
+        method: 'POST',
+        body: JSON.stringify({username: username.value, password: password.value})
+    })
+        .then(res => {
+            if(res.status != 200) clean_input();
+            return res.json();
+        })
+        .then(data => {
+            console.log(data);
+        })
+        .catch(err => console.log(err));
 }
 
 const clean_input = () => {
