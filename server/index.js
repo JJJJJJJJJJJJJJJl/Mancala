@@ -2,8 +2,6 @@ const http = require('http');
 const fs = require('fs').promises;
 const auth = require('./auth');
 
-let file;
-
 const headers = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "OPTIONS, POST, GET",
@@ -46,24 +44,4 @@ const requestListener = function (req, res) {
 }
 
 const server = http.createServer(requestListener);
-
-/* const server = http.createServer((req, res) => {
-    if(req.method == 'POST'){
-        console.log("POST request made");
-        if(req.url == "/register"){
-            fs.readFile("register.json")
-                .then(content => {
-                    res.writeHead(200, headers);
-                    let json = JSON.parse(content);
-                    console.log(json);
-                    json.push({ok:"ok"});
-                    fs.writeFile("register.json", JSON.stringify(json))
-                    res.end(content);
-                }).catch(err => {
-                    console.error(err);
-                    //process.exit(1);
-                });
-        }
-    }
-}); */
 server.listen(8080);
