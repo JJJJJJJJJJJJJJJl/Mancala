@@ -7,16 +7,31 @@ const headers = {
     "Access-Control-Allow-Methods": "OPTIONS, POST, GET",
 };
 
+let register_file;
+fs.readFile("register.json")
+    .then(content => {
+        register_file = JSON.parse(content);
+    }).catch(err => {
+        console.error(err);
+        //process.exit(1);
+    });
+
+let id_file;
+fs.readFile("id.txt")
+    .then(content => {
+        id_file = parseInt(content.toString());
+    }).catch(err => {
+        console.error(err);
+        //process.exit(1);
+    });
+
 const find = (json, target) => {
-    const len = Object.getOwnPropertyNames(json.usernames).length
-    console.log("len " + len);
+    const len = Object.getOwnPropertyNames(json.usernames).length;
     for(let i=1; i<=len; i++){
-        console.log(i + ": " + json.usernames[i]);
         if(json.usernames[i] == target){
-            return 69;
+            return 777;
         }
     }
-    console.log("kek");
     return -1;
 }
 
@@ -27,42 +42,22 @@ const requestListener = function (req, res) {
             let data;
             req.on('data', (chunk) => {
                 data = JSON.parse(chunk);
-                console.log("data user: " + data.username);
                 if(auth.check_username(data.username) == 1){
                     res.writeHead(400, headers);
                     res.end(JSON.stringify({error: "invalid username"}));
                 }
+                else if(find(register_file, data.username) != -1){
+                    res.writeHead(400, headers);
+                    res.end(JSON.stringify({error: "username already exists"}));
+                }
                 else{
-                    fs.readFile("register.json")
-                        .then(content => {
-                            res.writeHead(200, headers);
-                            let json = JSON.parse(content);
-                            if(find(json, data.username) != -1){
-                                res.writeHead(400, headers);
-                                res.end(JSON.stringify({error: "username already exists"}));
-                            }
-                            else{
-                                fs.readFile("id.txt")
-                                    .then(content => {
-                                        id_int = parseInt(content.toString()) + 1;
-                                        id = id_int.toString();
-                                        fs.writeFile("id.txt", id);
-                                        console.log("id: " + id);
-                                        json.usernames[id] = data.username;
-                                        json.passwords[id] = data.password;
-                                        console.log(json);
-                                        fs.writeFile("register.json", JSON.stringify(json))
-                                        res.end(JSON.stringify({}));
-                                    }).catch(err => {
-                                        console.error(err);
-                                        //process.exit(1);
-                                    });
-                            }
-                        }).catch(err => {
-                            console.error(err);
-                            //process.exit(1);
-                        });
-                    }
+                    register_file.usernames[id_file + 1] = data.username;
+                    register_file.passwords[id_file + 1] = data.password;
+                    fs.writeFile("id.txt", (id_file + 1).toString());
+                    fs.writeFile("register.json", JSON.stringify(register_file));
+                    res.writeHead(200, headers);
+                    res.end(JSON.stringify({}));
+                }
             });
         }
         else{
