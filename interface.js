@@ -62,6 +62,8 @@ close_play_popup.onclick = function() {
 //close register popup by clicking X
 close_register_popup.onclick = function() {
   register_popup.style.display = "none";
+  clean_register_update_message();
+  clean_register_input();
 }
 
 //close any popup by clicking outside of popup area
@@ -73,6 +75,7 @@ window.onclick = function(event) {
     play_popup.style.display = "none";
   }
   else if(event.target == register_popup){
+    clean_register_update_message();
    register_popup.style.display = "none";
   }
 }

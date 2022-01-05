@@ -10,7 +10,7 @@ body {
     flex-direction: column;
 }
 
-#register_input textarea{
+.input{
     height: 2vh;
     width: 20vw;
     resize: none;
@@ -19,7 +19,7 @@ body {
 #submit{
     background-color: rgba(240, 108, 174, 0.39);
     padding: 1vh;
-    margin-top: 1vh;
+    margin-top: 2vh;
     width: 5vw;
     text-align: center;
 }
