@@ -16,7 +16,7 @@ let close_play_popup = document.getElementsByClassName("close")[1];
 let close_register_popup = document.getElementsByClassName("close")[2];
 
 //initialize game
-start_game_button.onclick = function() {
+start_game_button.onclick = () => {
   initGame();
   document.getElementById("play_popup").style.display = "none";
   play_popup.style.pointerEvents = 'auto';
@@ -24,43 +24,43 @@ start_game_button.onclick = function() {
 }
 
 //reset game board
-reset_board_button.onclick = function() {
+reset_board_button.onclick = () => {
   resetBoard();
 }
 
 //open rules popup
-rules_button.onclick = function() {
+rules_button.onclick = () => {
   play_popup.style.display = "none";
   register_popup.style.display = "none";
   rules_popup.style.display = "block";
 }
 
 //open play popup
-play_button.onclick = function() {
+play_button.onclick = () => {
   rules_popup.style.display = "none";
   register_popup.style.display = "none";
   play_popup.style.display = "block";
 }
 
 //open register popup
-register_button.onclick = function() {
+register_button.onclick = () => {
   rules_popup.style.display = "none";
   play_popup.style.display = "none";
   register_popup.style.display = "block";
 }
 
 //close rules popup by clicking X
-close_rules_popup.onclick = function() {
+close_rules_popup.onclick = () => {
   rules_popup.style.display = "none";
 }
 
 //close play popup by clicking X
-close_play_popup.onclick = function() {
+close_play_popup.onclick = () => {
   play_popup.style.display = "none";
 }
 
 //close register popup by clicking X
-close_register_popup.onclick = function() {
+close_register_popup.onclick = () => {
   register_popup.style.display = "none";
   clean_register_update_message();
   clean_register_input();
