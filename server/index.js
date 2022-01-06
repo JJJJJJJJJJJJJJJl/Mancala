@@ -32,20 +32,13 @@ const read_curid = () => {
 }
 read_curid();
 
-const find = (json, target) => {
-    const len = Object.getOwnPropertyNames(json.usernames).length;
-    for(let i=1; i<=len; i++){
-        if(json.usernames[i] == target){
-            return 777;
-        }
-    }
-    return -1;
-}
 
 const requestListener = function (req, res) {
-    if(req.url == "/register"){
-        if(req.method == 'POST'){
-            console.log("POST");
+    if(req.method == 'POST'){
+        if(req.url == "/register"){
+            console.log("register");
+            read_users();
+            read_curid();
             let data;
             req.on('data', (chunk) => {
                 data = JSON.parse(chunk);
@@ -53,7 +46,7 @@ const requestListener = function (req, res) {
                     res.writeHead(400, headers);
                     res.end(JSON.stringify({error: "invalid username"}));
                 }
-                else if(find(users_file, data.username) != -1){
+                else if(auth.find(users_file, data.username) != -1){
                     res.writeHead(400, headers);
                     res.end(JSON.stringify({error: "username already exists"}));
                 }
@@ -66,6 +59,26 @@ const requestListener = function (req, res) {
                     fs.writeFile("users.json", JSON.stringify(users_file));
                     read_users();
                     read_curid();
+                    res.writeHead(200, headers);
+                    res.end(JSON.stringify({}));
+                }
+            });
+        }
+        else if(req.url == "/login"){
+            console.log("login");
+            read_users();
+            read_curid();
+            req.on('data', (chunk) => {
+                data = JSON.parse(chunk);
+                if(auth.find(users_file, data.username) == -1){
+                    res.writeHead(400, headers);
+                    res.end(JSON.stringify({error: "username does not exist"}));
+                }
+                else if(auth.check_login(users_file, data.username, data.password) == -1){
+                    res.writeHead(400, headers);
+                    res.end(JSON.stringify({error: "wrong password"}));
+                }
+                else{
                     res.writeHead(200, headers);
                     res.end(JSON.stringify({}));
                 }

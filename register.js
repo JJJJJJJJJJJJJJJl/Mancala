@@ -1,12 +1,12 @@
 const register_container = document.getElementById("register_input");
-let submit = document.getElementById("submit");
-const username = document.getElementById("username");
-const password = document.getElementById("password");
+let submit = document.getElementById("register_submit");
+const register_username = document.getElementById("register_username");
+const register_password = document.getElementById("register_password");
 
 submit.onclick = () => {
     fetch("http://localhost:8080/register", {
         method: 'POST',
-        body: JSON.stringify({username: username.value, password: password.value})
+        body: JSON.stringify({username: register_username.value, password: register_password.value})
     })
         .then(res => {
             return res.json();
@@ -44,6 +44,6 @@ const clean_register_update_message = () => {
 }
 
 const clean_register_input = () => {
-    username.value = "";
-    password.value = "";
+    register_username.value = "";
+    register_password.value = "";
 }

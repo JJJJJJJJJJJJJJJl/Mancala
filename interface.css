@@ -16,7 +16,7 @@ body {
     resize: none;
 }
 
-#submit{
+.submit{
     background-color: rgba(240, 108, 174, 0.39);
     padding: 1vh;
     margin-top: 2vh;
@@ -24,7 +24,7 @@ body {
     text-align: center;
 }
 
-#submit:hover{
+.submit:hover{
     cursor: pointer;
 }
 
