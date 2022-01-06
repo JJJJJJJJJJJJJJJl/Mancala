@@ -31,7 +31,8 @@ const getPLayer1 = () => {
 const getPLayer2 = () => {
     //to be modified
     if(game.mode == "ai") return 420;
-    return 2;
+    else if(game.mode == 'irl')  return 2;
+    return -1;
 }
 
 const getHolesNumber = () => {
@@ -75,11 +76,13 @@ const addClickHoles = () => {
 
 const initGame = () => {
     game = new Game([], getPLayer1(), -1, getHolesNumber(), getHolesValue(), getGameMode(), 0);
-    game.player2 = getPLayer2();
-    game.player_move = getInitialPLayer();
-    console.log("initial: " + game.player_move);
     if(game.mode == 'irl' || game.mode == 'ai'){
+        game.player2 = getPLayer2();
+        game.player_move = getInitialPLayer();
         game.on = 1;
+    }
+    else if(game.mode == 'online'){
+        join_game(777, logged_username, logged_password, game.holes_number, game.holes_value);
     }
     game.startGame();
     addClickHoles();

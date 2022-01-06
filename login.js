@@ -4,6 +4,7 @@ const login_username = document.getElementById("login_username");
 const login_password = document.getElementById("login_password");
 
 let logged_username;
+let logged_password;
 
 login.onclick = () => {
     fetch("http://localhost:8080/login", {
@@ -17,6 +18,7 @@ login.onclick = () => {
             //if object empty
             if(Object.getOwnPropertyNames(data).length == 0){
                 logged_username = login_username.value;
+                logged_password = login_password.value;
                 login_update("logged in");
                 clean_login_input();
                 logged_in();
@@ -40,7 +42,7 @@ const logged_in = () => {
 
     const logged = document.createElement("div");
     logged.setAttribute("class", "logged");
-    logged.innerText = "logged as " + logged_username;
+    logged.innerHTML = 'logged as <span style="color: rgba(255, 0, 128, 0.69)">' + logged_username + "</span>";
 
     menu_container.appendChild(logged);
 }

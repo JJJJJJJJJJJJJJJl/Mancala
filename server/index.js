@@ -84,6 +84,26 @@ const requestListener = function (req, res) {
                 }
             });
         }
+        else if(req.url == '/join'){
+            req.on('data', (chunk) => {
+                data = JSON.parse(chunk);
+
+                //queue not empty so match player with waiting player
+                if(normal_game_queue.length('normal_game') != 0){
+                    const player_ready = normal_game_queue.dequeue('normal_game');
+                    //send info to waiting player
+
+                    //send info to player that just joined
+                }
+                //enqueue player
+                else{
+                    //generate game hash
+                    let game_hash;
+
+                    normal_game_queue.enqueue('normal_game', data.username, game_hash);
+                }
+            });
+        }
         else{
             console.log("whatever");
             res.writeHead(200);
