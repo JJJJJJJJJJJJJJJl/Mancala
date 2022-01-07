@@ -11,8 +11,14 @@ const join_game = (grp, user, pw, hn, hv) => {
         .then(data => {
             if(data.status == 'waiting'){
                 waiting();
+                create_sse(data.game);
             }
             else{
+                /* REMINDER
+                when the second player joins
+                which is done here
+                demand server sent event
+                so the waiting player is aware of second player name */
                 start(data.opp);
             }
         })

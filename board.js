@@ -83,7 +83,6 @@ const initGame = () => {
     }
     else if(game.mode == 'online'){
         join_game(777, logged_username, logged_password, game.holes_number, game.holes_value);
-        
     }
     game.startGame();
     addClickHoles();

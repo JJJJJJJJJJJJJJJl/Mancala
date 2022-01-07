@@ -3,9 +3,14 @@ const fs = require('fs').promises;
 const auth = require('./auth');
 const queue = require('./queue');
 const game_hash = require('./game_hash');
+const manager = require('./manage_games');
+
+let data;
 
 let users_file;
 let id_file;
+
+let active_games = [];
 
 const headers = {
     "Access-Control-Allow-Origin": "*",
@@ -36,12 +41,24 @@ read_curid();
 
 
 const requestListener = function (req, res) {
-    if(req.method == 'POST'){
+    if(req.method == 'GET'){
+        const game = manager.find_game_hash(active_games, req.url);
+        if(game != -1){
+            req.on('data', (chunk) => {
+                data = JSON.parse(chunk);
+                
+            });
+        }
+        else{
+            res.writeHead(400, headers);
+            res.end(JSON.stringify({error: "game does not exist"}));
+        }
+    }
+    else if(req.method == 'POST'){
         if(req.url == "/register"){
             console.log("register");
             read_users();
             read_curid();
-            let data;
             req.on('data', (chunk) => {
                 data = JSON.parse(chunk);
                 if(auth.check_username(data.username) == 1){
@@ -100,6 +117,7 @@ const requestListener = function (req, res) {
     
                             //send info to player that just joined
 
+                            active_games.push({game: player_ready.game_hash, player1: player_ready.username, player2: data.username});
                             res.writeHead(200, headers);
                             res.end(JSON.stringify({game: player_ready.game_hash, status: "matched", opp: player_ready.username}));
                         }
@@ -116,10 +134,18 @@ const requestListener = function (req, res) {
                 } 
             });
         }
+        else if(req.url == '/opp'){
+            req.on('data', (chunk) => {
+                data = JSON.parse(chunk);
+                const player = data.user;
+                const game = manager.find_game_player(active_games, player);
+                res.writeHead(200, headers);
+                res.end(JSON.stringify({opp: game.player2}));
+            });
+        }
         else{
-            console.log("whatever");
-            res.writeHead(200);
-            res.end('Hello, World!');
+            res.writeHead(400);
+            res.end('unexistent endpoint :/');
         }
     }
 }
