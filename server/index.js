@@ -1,6 +1,8 @@
 const http = require('http');
 const fs = require('fs').promises;
 const auth = require('./auth');
+const queue = require('./queue');
+const game_hash = require('./game_hash');
 
 let users_file;
 let id_file;
@@ -75,7 +77,7 @@ const requestListener = function (req, res) {
                     res.end(JSON.stringify({error: "username does not exist"}));
                 }
                 else if(auth.check_login(users_file, data.username, data.password) == -1){
-                    res.writeHead(400, headers);
+                    res.writeHead(400, headers); 
                     res.end(JSON.stringify({error: "wrong password"}));
                 }
                 else{
@@ -87,21 +89,31 @@ const requestListener = function (req, res) {
         else if(req.url == '/join'){
             req.on('data', (chunk) => {
                 data = JSON.parse(chunk);
+                const type = "normal_game_" + data.holes_number + "_" + data.holes_value;
+                console.log(type);
+                if(type == 'normal_game_10_3'){
+                    //queue not empty so match player with waiting player
+                    if(queue.normal_game_103.length(type) != 0){
+                        if(queue.normal_game_103.peek(type) != data.username){
+                            const player_ready = queue.normal_game_103.dequeue(type);
+                            //send info to waiting player
+    
+                            //send info to player that just joined
 
-                //queue not empty so match player with waiting player
-                if(normal_game_queue.length('normal_game') != 0){
-                    const player_ready = normal_game_queue.dequeue('normal_game');
-                    //send info to waiting player
-
-                    //send info to player that just joined
-                }
-                //enqueue player
-                else{
-                    //generate game hash
-                    let game_hash;
-
-                    normal_game_queue.enqueue('normal_game', data.username, game_hash);
-                }
+                            res.writeHead(200, headers);
+                            res.end(JSON.stringify({game: player_ready.game_hash, status: "matched", opp: player_ready.username}));
+                        }
+                    }
+                    //enqueue player
+                    else{
+                        //generate game hash
+                        let ghash = game_hash.generate_game_hash(data.holes_number, data.holes_value, Date.now());
+                        console.log("hash: "+ghash);
+                        queue.normal_game_103.enqueue(type, data.username, ghash);
+                        res.writeHead(200, headers);
+                        res.end(JSON.stringify({game: ghash, status: "waiting"}));                        
+                    }
+                } 
             });
         }
         else{
