@@ -24,7 +24,7 @@
             <div class="popup_content">
               <span class="close">&times;</span>
               <!-- ty https://harriscenter.org/wp-content/uploads/2020/03/mancala_rules.pdf <3 *-* -->
-              <p>Pieces move around the board, one by one landing in the next hole, in a counter-clockwise circle</p>
+              <p>Pieces move around the board one by one, landing in the next hole, in a counter-clockwise circle</p>
               <p>The warehouse on your right belongs to you. That is where you keep the pieces you've collected so far</p>
               <p>The X bottom holes are your holes</p>
               <p>Your move will skip the opponents warehouse</p>
@@ -44,15 +44,15 @@
                         </select>
                         <label for="holes_value">Value</label>
                         <select id="holes_value" name="holes_value">
-                            <option value="1">1</option>
                             <option value="3">3</option>
                             <option value="5">5</option>
                         </select>
                         <label for="game_mode">Mode</label>
                         <select id="game_mode" name="game_mode">
-                            <option value="irl">IRL</option>
-                            <option value="ai">AI</option>
                             <option value="online">Online</option>
+                            <option value="irl">IRL</option>
+                            <option value="ai">AI (Minimax)</option>
+                            <option value="jjjjjj_ai">AI JJJJJJ</option>
                         </select>
                     </form>
                     <div id="start_game_button"><p>START GAME</p></div>
@@ -86,9 +86,13 @@
         <div class="game_content">
             <div class="game_setters">
                 <h3 id="play_button">&#x1F987; PLAY &#x1F987;</h3>
-                <h3 id="reset_board_button">&#x1F987; RESET BOARD &#x1F987;</h3>
-                <p id="playing"></p>
+                <!-- <h3 id="reset_board_button">&#x1F987; RESET BOARD &#x1F987;</h3> -->
+                <div class="jjjjjj"><p>username</p></div>
+                <input id="nick" class="input"></input>
+                <div class="jjjjjj"><p>password (online mode)</p></div>
+                <input id="pw" class="input" type="password"></input>
                 <p id="online_game_status"></p>
+                <p id="playing"></p>
             </div>
             <div id="universe">
                 <div id="game_container"></div>
@@ -100,5 +104,9 @@
         <script src="login.js"></script>
         <script src="register.js"></script>
         <script src="join.js"></script>
+        <script src="sse_handler.js"></script>
+        <script src="notify.js"></script>
+        <script src="game_handler.js"></script>
+        <script src="env.js"></script>
     </body>
 </html>

@@ -18,32 +18,36 @@ class Game{
       this.on = game_on;
     }
 
-    startGame(){
-        loadBoard();
+    start_game(){
+        load_board();
     }
 }
 
-const getPLayer1 = () => {
-    //to be modified
-    return 1;
+const get_player1 = () => {
+    if(logged_username != ""){
+        return logged_username;
+    }
+    else{
+        return "guest";
+    }
 }
 
-const getPLayer2 = () => {
-    //to be modified
+const get_player2 = () => {
     if(game.mode == "ai") return 420;
-    else if(game.mode == 'irl')  return 2;
+    else if(game.mode == "jjjjjj_ai") return "JJJJJJ AI";
+    else if(game.mode == "irl")  return 2;
     return -1;
 }
 
-const getHolesNumber = () => {
+const get_holes_number = () => {
     return parseInt(document.getElementById("holes_number").value);
 }
 
-const getHolesValue = () => {
+const get_holes_value = () => {
     return parseInt(document.getElementById("holes_value").value);
 }
 
-const getInitialPLayer = () => {
+const get_initial_player = () => {
     const rand = Math.round(Math.random()) + 1;
     if(rand == 1){
         return game.player1;
@@ -53,11 +57,11 @@ const getInitialPLayer = () => {
     }
 }
 
-const getGameMode = () => {
+const get_game_mode = () => {
     return document.getElementById("game_mode").value;
 }
 
-const addClickHoles = () => {
+const add_click_holes = () => {
     if(game.mode == 'irl'){
         for(let i=0; i<=game.holes_number; i++){
             if(i != game.holes_number>>1) document.getElementById(i).onclick = () => {
@@ -65,7 +69,7 @@ const addClickHoles = () => {
             };
         }
     }
-    else if(game.mode == 'ai'){
+    else if(game.mode == 'ai' || game.mode == 'jjjjjj_ai' || game.mode == 'online'){
         for(let i=(game.holes_number>>1)+1; i<=game.holes_number; i++){
             document.getElementById(i).onclick = () => {
                 turn(i);
@@ -74,22 +78,26 @@ const addClickHoles = () => {
     }
 }
 
-const initGame = () => {
-    game = new Game([], getPLayer1(), -1, getHolesNumber(), getHolesValue(), getGameMode(), 0);
-    if(game.mode == 'irl' || game.mode == 'ai'){
-        game.player2 = getPLayer2();
-        game.player_move = getInitialPLayer();
+const init_game = () => {
+    game = new Game([], get_player1(), -1, get_holes_number(), get_holes_value(), get_game_mode(), 0);
+    if(game.mode == 'irl' || game.mode == 'ai' || game.mode == 'jjjjjj_ai'){
+        game.player2 = get_player2();
+        game.player_move = get_initial_player();
         game.on = 1;
     }
     else if(game.mode == 'online'){
+        if(logged_username == undefined || logged_password == undefined){
+            document.getElementById("playing").innerText = "unable to play online, you must be logged";
+            return;
+        }
         join_game(777, logged_username, logged_password, game.holes_number, game.holes_value);
     }
-    game.startGame();
-    addClickHoles();
-    if(game.player_move == game.player2 && game.mode == "ai") turn();
+    game.start_game();
+    add_click_holes();
+    if(game.player_move == game.player2 && (game.mode == "ai" || game.mode == 'jjjjjj_ai')) turn();
 }
 
-const cleanDiv = (container) => {
+const clean_div = (container) => {
     while(container.hasChildNodes()){
         container.removeChild(container.firstChild);
     }
@@ -97,12 +105,14 @@ const cleanDiv = (container) => {
 
 
 //loads board
-const loadBoard = () => {
+const load_board = () => {
+    if(game.mode != 'online') document.getElementById("online_game_status").innerText = "";
+
     //div containing every board element
     const game_container = document.getElementById("game_container");
 
     //cleaning up board container div
-    cleanDiv(game_container);
+    clean_div(game_container);
 
     //div represeting the left side warehouse
     const left_warehouse = document.createElement("div");
@@ -182,76 +192,80 @@ const loadBoard = () => {
     game_container.appendChild(holes);
     game_container.appendChild(right_warehouse);
     
-    displayPieces();
+    display_pieces();
 
     //might change this later
-    setPlaying();
+    set_playing();
 
     //locking non starting player side/holes
-    lockHoles();
+    lock_holes();
 }
 
-const randomInterval = (min, max) => {
+const random_interval = (min, max) => {
     return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
-const setPieceSize = (piece, hole_value) => {
+const set_piece_size = (piece) => {
     piece.style.height = "2.5vh";
     piece.style.width = "2.5vh";
 }
 
-const displayPieces = () => {
+const display_pieces = () => {
     let hole_pieces_area;
 
     for(let i=0; i<=game.holes_number; i++){
         if(i != game.holes_number>>1){
             for(let j=0; j<game.board[i]; j++){
                 hole_pieces_area = document.getElementById("hole_pieces_" + i);
-                addPiece(hole_pieces_area, 1, game.board[i]);
+                add_pieces(hole_pieces_area, 1);
             }
         }
     }
 }
 
-const cleanBoardPieces = () => {
+const clean_board_pieces = () => {
     //cleaning left warehouse
-    cleanDiv(document.getElementById("left_warehouse_pieces_area"));
+    clean_div(document.getElementById("left_warehouse_pieces_area"));
     //cleaning right warehouse
-    cleanDiv(document.getElementById("right_warehouse_pieces_area"));
+    clean_div(document.getElementById("right_warehouse_pieces_area"));
     //cleaning holes
     let hole_pieces_area;
     for(let i=0; i<=game.holes_number; i++){
         if(i != game.holes_number>>1){
             hole_pieces_area = document.getElementById("hole_pieces_" + i);
-            cleanDiv(hole_pieces_area);
+            clean_div(hole_pieces_area);
         }
     }
 }
 
-const addPiece = (pieces_area, value_to_add, value) => {
+const add_pieces = (pieces_area, pieces_to_add) => {
     let piece;
-
-    for(let i=0; i<value_to_add; i++){
+    for(let i=0; i<pieces_to_add; i++){
         piece = document.createElement("div");
         piece.setAttribute("class", "piece");
-        setPieceSize(piece, value);
-        piece.style.left = randomInterval(10, pieces_area.offsetWidth-50).toString()+"px";
-        piece.style.top = randomInterval(10, pieces_area.offsetHeight-50).toString()+"px";
+        set_piece_size(piece);
+        piece.style.left = random_interval(10, pieces_area.offsetWidth-50).toString()+"px";
+        piece.style.top = random_interval(10, pieces_area.offsetHeight-50).toString()+"px";
         pieces_area.appendChild(piece);
     }
-
 }
 
-const getNextAIMove = () => {
+const remove_pieces = (pieces_area, pieces_to_remove) => {
+    for(let i=0; i<pieces_to_remove; i++){
+        pieces_area.removeChild(pieces_area.lastElementChild);
+    }
+}
+
+const get_next_ai_move = () => {
     let save_player_move = game.player_move;
-    let ai_move_hole = calculateAIMove(7);
+    let ai_move_hole = calculate_ai_move(7);
     game.player_move = save_player_move;
-    setPlaying();
+    set_playing();
     console.log("nextAIMove: "+ai_move_hole);
-    onHoleClick(game.board, ai_move_hole);
+    on_hole_click(game.board, ai_move_hole);
 }
 
-const lockHoles = () => {
+const lock_holes = () => {
     let hole; 
 
     //unlocking player 1 holes/locking player 2 holes
@@ -292,20 +306,27 @@ const lockHoles = () => {
     }
 }
 
-const calculateAIMove = (depth) => {
+const calculate_ai_move = (depth) => {
     best = -999999;
-    let move = jjjjj_ai(game.board.slice(), 2, depth, -1);
-    return move.hole;
+    let move;
+    if(game.mode == 'ai'){
+        move = ai(game.board.slice(), 2, depth, -1);
+        return move.hole;
+    }
+    else if(game.mode == 'jjjjjj_ai'){
+        jjjjj_ai(game.board.slice(), 2, depth, -1);
+        return ai_hole;
+    }
 }
 
 //this version which is the minimax in its truest form
-const jjjjj_ai = (board, entity, depth, initial_hole) => {
+const ai = (board, entity, depth, initial_hole) => {
     let board_state_saved = board.slice();
     let node_value = board[game.holes_number+1] - board[game.holes_number>>1];
     if(depth == 0 ||
-        checkBoard(board.slice(), 420) == 0 ||
-        checkBoard(board.slice(), 420) == 1 ||
-        checkBoard(board.slice(), 420) == 2)
+        check_board(board.slice(), 420) == 0 ||
+        check_board(board.slice(), 420) == 1 ||
+        check_board(board.slice(), 420) == 2)
     {
         let leaf = {value: node_value, hole: 0};
         return leaf;
@@ -316,8 +337,8 @@ const jjjjj_ai = (board, entity, depth, initial_hole) => {
             if(board[i] != 0){
                 alpha.hole = i;
                 game.player_move = entity;
-                onHoleClick(board, i, 420);
-                alpha.value = Math.max(alpha.value, jjjjj_ai(board, game.player_move, depth-1, initial_hole == -1 ? i : initial_hole).value);
+                on_hole_click(board, i, 420);
+                alpha.value = Math.max(alpha.value, ai(board, game.player_move, depth-1, initial_hole == -1 ? i : initial_hole).value);
                 board = board_state_saved.slice();
             }
         }
@@ -329,8 +350,8 @@ const jjjjj_ai = (board, entity, depth, initial_hole) => {
             if(board[i] != 0){
                 alpha.hole = i;
                 game.player_move = entity;
-                onHoleClick(board, i, 420);
-                alpha.value = Math.min(alpha.value, jjjjj_ai(board, game.player_move, depth-1, initial_hole == -1 ? i : initial_hole).value);
+                on_hole_click(board, i, 420);
+                alpha.value = Math.min(alpha.value, ai(board, game.player_move, depth-1, initial_hole == -1 ? i : initial_hole).value);
                 board = board_state_saved.slice();
             }
         }
@@ -340,56 +361,57 @@ const jjjjj_ai = (board, entity, depth, initial_hole) => {
 
 //minimax a lil modified lol
 //for some reason (that i dont understand) depth 7 plays better than depth 10...
-/* const jjjjj_ai = (board, entity, depth, initial_hole) => {
+const jjjjj_ai = (board, entity, depth, initial_hole) => {
     let board_state_saved = board.slice();
     let node_value = board[game.holes_number+1] - board[game.holes_number>>1];
-    if(depth == 0 || checkBoard(board.slice(), 420) == 2){
+    if(depth == 0 ||
+        check_board(board.slice(), 420) == 0 ||
+        check_board(board.slice(), 420) == 1 ||
+        check_board(board.slice(), 420) == 2)
+    {
         if(node_value > best){
             best = node_value;
             ai_hole = initial_hole;
         }
-        return node_value;
     }
     else if(entity == 2){
         for(let i=0; i<game.holes_number>>1; i++){
             if(board[i] != 0){
                 game.player_move = entity;
-                onHoleClick(board, i, 420);
+                on_hole_click(board, i, 420);
                 jjjjj_ai(board, game.player_move, depth-1, initial_hole == -1 ? i : initial_hole);
                 board = board_state_saved.slice();
             }
         }
-        return node_value;
     }
     else{
         for(let i=game.holes_number; i>game.holes_number>>1; i--){
             if(board[i] != 0){
                 game.player_move = entity;
-                onHoleClick(board, i, 420);
+                on_hole_click(board, i, 420);
                 jjjjj_ai(board, game.player_move, depth-1, initial_hole == -1 ? i : initial_hole);
                 board = board_state_saved.slice();
             }
         }
-        return node_value;
     }
-} */
+}
 
 const turn = async (id) => {
     if(game.mode == 'irl'){
-        game.player_move == game.player1 ? onHoleClick(game.board, id, game.player1) : onHoleClick(game.board, id, game.player2);
+        game.player_move == game.player1 ? on_hole_click(game.board, id, game.player1) : on_hole_click(game.board, id, game.player2);
     }
-    else if(game.mode == 'ai'){
-        game.player_move == game.player1 ? onHoleClick(game.board, id, game.player1) : null;
+    else if(game.mode == 'ai' || game.mode == 'jjjjjj_ai'){
+        game.player_move == game.player1 ? on_hole_click(game.board, id, game.player1) : null;
         while(game.player_move == game.player2 && game.on == 1){
             await new Promise((resolve) => {
                 setTimeout(() => {
-                    resolve(getNextAIMove());
+                    resolve(get_next_ai_move());
                 }, 2000);
             });
         }
     }
     else if(game.mode == 'online'){
-        
+        notify(game.holes_number - id);
     }
     else{
         console.log("error: game.mode '" + mode + "' invalid");
@@ -398,7 +420,7 @@ const turn = async (id) => {
 }
 
 //handles each game move
-const onHoleClick = (board, hole_id, entity) => {
+const on_hole_click = (board, hole_id, entity) => {
     //is game still on
     if(game.on == 0) return;
     //is it a valid move
@@ -406,17 +428,17 @@ const onHoleClick = (board, hole_id, entity) => {
     //clicked hole p element that contains the current value
     const clicked_hole_p_value = document.getElementById("hole_value_"+hole_id);
     //clean clicked hole pieces
-    if(entity != 420) cleanDiv(document.getElementById("hole_pieces_"+hole_id));
+    if(entity != 420) clean_div(document.getElementById("hole_pieces_"+hole_id));
     //get hole current value
     const hole_value = entity == 420 ? board[parseInt(hole_id)] : parseInt(clicked_hole_p_value.innerText);
     //get next hole index
     let cur_hole = parseInt(hole_id) == 0 ? game.holes_number + 1 : parseInt(hole_id) - 1;
     //does it switch player after the move
-    let switch_player = 1;
-    //traversing board *hole_value* times 
+    let switch_player_bool = 1;
+    //traversing board *hole_value* times
     for(let i=0; i<hole_value; i++){
         //left warehouse was reached and its value is incremented by one
-        if(cur_hole === game.holes_number+1){
+        if(cur_hole == game.holes_number+1){
             //player 1 move so opponent warehouse (left one) skipped
             if(game.player_move == game.player1){
                 i--;
@@ -426,10 +448,10 @@ const onHoleClick = (board, hole_id, entity) => {
             else{
                 //player 2 last piece landed on its own warehouse so he keeps playing
                 if(i === hole_value-1){
-                    switch_player = 0;
+                    switch_player_bool = 0;
                 }
                 //ai search space processing related
-                if(entity === 420){
+                if(entity == 420){
                     board[cur_hole--]++;
                 }
                 else{
@@ -440,14 +462,14 @@ const onHoleClick = (board, hole_id, entity) => {
                     //updating ui
                     left_warehouse_p_value.innerText = left_warehouse_value + 1;
                     //updating board struct
-                    board[cur_hole] = left_warehouse_value + 1;
+                    board[cur_hole--] = left_warehouse_value + 1;
                     //adding piece to warehouse
-                    addPiece(left_warehouse_pieces_area, 1, board[cur_hole--]);
+                    add_pieces(left_warehouse_pieces_area, 1);
                 }
             }
         }
         //right warehouse was reached and its value is incremented by one
-        else if(cur_hole === game.holes_number>>1){
+        else if(cur_hole == game.holes_number>>1){
             //player 2 move so opponent warehouse (right one) skipped
             if(game.player_move == game.player2){
                 i--;
@@ -456,11 +478,11 @@ const onHoleClick = (board, hole_id, entity) => {
             //regular move
             else{
                 //player 1 last piece landed on its own warehouse so he keeps playing
-                if(i === hole_value-1){
-                    switch_player = 0;
+                if(i == hole_value-1){
+                    switch_player_bool = 0;
                 }
                 //ai search space processing related
-                if(entity === 420){
+                if(entity == 420){
                     board[cur_hole--]++;
                 }
                 else{
@@ -471,9 +493,9 @@ const onHoleClick = (board, hole_id, entity) => {
                     //updaing ui
                     right_warehouse_p_value.innerText = right_warehouse_value + 1;
                     //updating board struct
-                    board[cur_hole] = right_warehouse_value + 1;
+                    board[cur_hole--] = right_warehouse_value + 1;
                     //adding piece to warehouse
-                    addPiece(right_warehouse_pieces_area, 1, board[cur_hole--]);
+                    add_pieces(right_warehouse_pieces_area, 1);
                 }
             }
         }
@@ -483,9 +505,9 @@ const onHoleClick = (board, hole_id, entity) => {
 
             //when player 2 last iteration move lands on one of its own side empty hole
             //he then gets that last piece plus the opponent opposite hole pieces on his warehouse (left)
-            if(i === hole_value-1 && value === 0 && cur_hole < game.holes_number>>1 && game.player_move == game.player2){
+            if(i == hole_value-1 && value == 0 && cur_hole < game.holes_number>>1 && game.player_move == game.player2){
                 //player 2 plays next turn aswell
-                switch_player = 0;
+                switch_player_bool = 0;
                 
                 //ai search space processing related
                 if(entity == 420){
@@ -513,17 +535,17 @@ const onHoleClick = (board, hole_id, entity) => {
                     board[game.holes_number+1] = left_warehouse_value + opposite_hole_value + 1;
 
                     //adding pieces to warehouse§
-                    addPiece(left_warehouse_pieces_area, opposite_hole_value + 1, board[game.holes_number+1]);
+                    add_pieces(left_warehouse_pieces_area, opposite_hole_value + 1);
 
                     //cleaning pieces of opposite hole
-                    cleanDiv(opposite_hole_pieces_area);
+                    clean_div(opposite_hole_pieces_area);
                 }
             }
             //when player 1 last iteration move lands on one of its own side empty hole
             //he then gets that last piece plus the opponent opposite hole pieces on his warehouse (right)
-            else if(i === hole_value-1 && value === 0 && cur_hole > game.holes_number>>1 && game.player_move == game.player1){
+            else if(i == hole_value-1 && value == 0 && cur_hole > game.holes_number>>1 && game.player_move == game.player1){
                 //player 1 plays next turn aswell
-                switch_player = 0;
+                switch_player_bool = 0;
 
                 if(entity == 420){
                     board[game.holes_number>>1] += board[game.holes_number-cur_hole] + 1;
@@ -550,10 +572,10 @@ const onHoleClick = (board, hole_id, entity) => {
                     board[game.holes_number>>1] = right_warehouse_value + opposite_hole_value + 1;
 
                     //adding pieces to warehouse
-                    addPiece(right_warehouse_pieces_area, opposite_hole_value + 1, board[game.holes_number>>1]);
+                    add_pieces(right_warehouse_pieces_area, opposite_hole_value + 1);
 
                     //cleaning pieces of opposite hole
-                    cleanDiv(opposite_hole_pieces_area);
+                    clean_div(opposite_hole_pieces_area);
                 }
             }
             //regular move
@@ -568,10 +590,10 @@ const onHoleClick = (board, hole_id, entity) => {
                     //updating ui
                     hole_p_value.innerText = value + 1;
                     //updating board struct
-                    board[cur_hole] = value + 1;
+                    board[cur_hole--] = value + 1;
 
                     //adding piece to hole
-                    addPiece(hole_pieces_area, 1, board[cur_hole--]);
+                    add_pieces(hole_pieces_area, 1);
                 }
             }
         }
@@ -594,15 +616,15 @@ const onHoleClick = (board, hole_id, entity) => {
         }
     }
 
-    switch_player === 1 ? (entity == 420 ? switchPlayer(420) : switchPlayer()) : null;
+    switch_player_bool == 1 ? (entity == 420 ? switch_player(420) : switch_player()) : null;
     if(entity != 420){
-        lockHoles();
-        checkBoard(board, 1);
+        lock_holes();
+        check_board(board, 1);
         if(game.on == 0) document.getElementById("playing").innerText = "";
     }
 }
 
-const setPlaying = (entity) => {
+const set_playing = (entity) => {
     //ai stuff..no need to affect visuals
     if(entity == 420) return;
 
@@ -610,7 +632,7 @@ const setPlaying = (entity) => {
     const up_holes = document.getElementById("up_holes");
     const down_hole = document.getElementById("down_holes");
 
-    playing.innerText = "Playing: Player " + game.player_move;
+    playing.innerText = "Playing: " + game.player_move;
     if(game.player_move == game.player1){
         up_holes.style.borderTopColor = "rgba(246, 191, 240, 0.548)"
         down_hole.style.borderBottomColor = "rgba(122, 27, 153, 0.39)";
@@ -621,19 +643,19 @@ const setPlaying = (entity) => {
     }
 }
 
-const switchPlayer = (entity) => {
+const switch_player = (entity) => {
     if(game.player_move == game.player1){
         game.player_move = game.player2; 
-        setPlaying(entity);
+        set_playing(entity);
     }
     else{
         game.player_move = game.player1;
-        setPlaying(entity);
+        set_playing(entity);
     }
 }
 
 //called after each move, checks board state
-const checkBoard = (board, entity) => {
+const check_board = (board, entity) => {
     const left_warehouse_value = board[game.holes_number+1];
     const right_warehouse_value = board[game.holes_number>>1];
 
@@ -668,14 +690,14 @@ const checkBoard = (board, entity) => {
             if(entity == 420) return 2;
             else{
                 game.on = 0;  
-                alert("Player 2 won");
+                alert(game.player2 + " won");
             }
         }
         else{
             if(entity == 420) return 1;
             else{
                 game.on = 0;
-                alert("Player 1 won");
+                alert(game.player1 + " won");
             }
         }
     }
@@ -700,7 +722,7 @@ const checkBoard = (board, entity) => {
 
             player2_warehouse = board[game.holes_number+1] + pieces;
             left_warehouse_p_value.innerText = player2_warehouse;
-            addPiece(left_warehouse_pieces_area, pieces, player2_warehouse);
+            add_pieces(left_warehouse_pieces_area, pieces);
             player1_warehouse = board[game.holes_number>>1];
         }
         //veredict
@@ -708,14 +730,14 @@ const checkBoard = (board, entity) => {
             if(entity == 420) return 1;
             else{
                 game.on = 0;
-                alert("Player 1 won");
+                alert(game.player1 + " won");
             }
         }
         else if(player1_warehouse < player2_warehouse){
             if(entity == 420) return 2;
             else{
                 game.on = 0;
-                alert("Player 2 won");
+                alert(game.player2 + " won");
             }
         }
         else{
@@ -748,7 +770,7 @@ const checkBoard = (board, entity) => {
 
             player1_warehouse = board[game.holes_number>>1] + pieces;
             right_warehouse_p_value.innerText = player1_warehouse;
-            addPiece(right_warehouse_pieces_area, pieces, player1_warehouse);
+            add_pieces(right_warehouse_pieces_area, pieces);
             player2_warehouse = board[game.holes_number+1];
         }
         //veredict
@@ -756,14 +778,14 @@ const checkBoard = (board, entity) => {
             if(entity == 420) return 1;
             else{
                 game.on = 0;
-                alert("Player 1 won");
+                alert(game.player1 + " won");
             }
         }
         else if(player1_warehouse < player2_warehouse){
             if(entity == 420) return 2;
             else{
                 game.on = 0;
-                alert("Player 2 won");
+                alert(game.player2 + " won");
             }
         }
         else{
@@ -776,7 +798,51 @@ const checkBoard = (board, entity) => {
     }
 }
 
-const resetBoard = () => {
+const update_board = (p_side, p_warehouse, opp_side, opp_warehouse) => {
+    let pieces_diff;
+    //update opp holes
+    for(let i=0, j=(game.holes_number>>1)-1; i<game.holes_number>>1, j>=0; i++, j--){
+        pieces_diff = opp_side[j] - game.board[i];
+        game.board[i] = opp_side[j];
+        document.getElementById("hole_value_" + i).innerText = opp_side[j];
+        update_pieces(document.getElementById("hole_pieces_" + i), pieces_diff);
+    }
+
+    //update opp warehouse
+    pieces_diff = opp_warehouse - game.board[game.holes_number+1];
+    game.board[game.holes_number+1] = opp_warehouse;
+    document.getElementById("left_warehouse_value").innerText = opp_warehouse;
+    update_pieces(document.getElementById("left_warehouse_pieces_area"), pieces_diff);
+
+    //update user side
+    for(let i=game.holes_number, j=0; i>game.holes_number>>1, j<game.holes_number>>1; i--, j++){
+        pieces_diff = p_side[j] - game.board[i];
+        game.board[i] = p_side[j];
+        document.getElementById("hole_value_" + i).innerText = p_side[j];
+        update_pieces(document.getElementById("hole_pieces_" + i), pieces_diff);
+    }
+
+    //update user warehouse
+    pieces_diff = p_warehouse - game.board[game.holes_number>>1];
+    game.board[game.holes_number>>1] = p_warehouse;
+    document.getElementById("right_warehouse_value").innerText = p_warehouse;
+    update_pieces(document.getElementById("right_warehouse_pieces_area"), pieces_diff);
+}
+
+const update_pieces = (pieces_area, pieces_diff) => {
+    if(pieces_diff > 0){
+        add_pieces(pieces_area, Math.abs(pieces_diff));
+    }
+    else if(pieces_diff < 0){
+        remove_pieces(pieces_area, Math.abs(pieces_diff));
+    }
+    else{
+        const murakami = "cool books";
+    }
+}
+
+
+const reset_board = () => {
     const left_warehouse_p_value = document.getElementById("left_warehouse_value");
     const right_warehouse_p_value = document.getElementById("right_warehouse_value");
 
@@ -795,11 +861,11 @@ const resetBoard = () => {
             document.getElementById(i).innerText = game.holes_value;
         }
     }
-    cleanBoardPieces();
+    clean_board_pieces();
 
-    lockHoles();
+    lock_holes();
 
-    setPlaying();
+    set_playing();
 
     game.initial_player == 1 ? game.initial_player = 2 : game.initial_player = 1;
 }

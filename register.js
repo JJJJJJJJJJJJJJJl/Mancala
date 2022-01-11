@@ -4,9 +4,9 @@ const register_username = document.getElementById("register_username");
 const register_password = document.getElementById("register_password");
 
 submit.onclick = () => {
-    fetch("http://localhost:8080/register", {
+    fetch(second + "register", {
         method: 'POST',
-        body: JSON.stringify({username: register_username.value, password: register_password.value})
+        body: JSON.stringify({nick: register_username.value, password: register_password.value})
     })
         .then(res => {
             return res.json();

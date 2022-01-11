@@ -149,6 +149,11 @@ body {
     align-items: center;
 }
 
+.jjjjjj{
+    width: 20vw;
+    float: left;
+}
+
 footer{
     text-align: center;
     position: fixed; 

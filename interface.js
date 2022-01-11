@@ -7,7 +7,7 @@ let register_popup = document.getElementById("register_popup");
 //buttons
 let rules_button = document.getElementById("rules_button");
 let play_button = document.getElementById("play_button");
-let reset_board_button = document.getElementById("reset_board_button");
+//let reset_board_button = document.getElementById("reset_board_button");
 let start_game_button = document.getElementById("start_game_button");
 let login_button = document.getElementById("login_button");
 let register_button = document.getElementById("register_button");
@@ -20,16 +20,18 @@ let close_login_popup = document.getElementsByClassName("close")[3];
 
 //initialize game
 start_game_button.onclick = () => {
-  initGame();
+  logged_username = document.getElementById("nick").value;
+  logged_password = document.getElementById("pw").value;
+  init_game();
   document.getElementById("play_popup").style.display = "none";
   play_popup.style.pointerEvents = 'auto';
-  reset_board_button.style.pointerEvents = 'auto';
+  //reset_board_button.style.pointerEvents = 'auto';
 }
 
 //reset game board
-reset_board_button.onclick = () => {
+/* reset_board_button.onclick = () => {
   resetBoard();
-}
+} */
 
 //open rules popup
 rules_button.onclick = () => {

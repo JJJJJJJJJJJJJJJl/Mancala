@@ -7,7 +7,7 @@ const generate_game_hash = (hn, hv, time) => {
         final += (step1[i] + Math.floor(Math.random() * (max - min + 1) + min)) + "";
         final += (step1[i] + Math.floor(Math.random() * (max - min + 1) + min)) + "";
     }
-    return final;
+    return final.toString();
 }
 
 module.exports = {

@@ -3,8 +3,8 @@ let login = document.getElementById("login_submit");
 const login_username = document.getElementById("login_username");
 const login_password = document.getElementById("login_password");
 
-let logged_username;
-let logged_password;
+/* let logged_username;
+let logged_password; */
 
 login.onclick = () => {
     fetch("http://localhost:8080/login", {
