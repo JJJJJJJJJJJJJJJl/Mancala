@@ -2,13 +2,12 @@ let current_game;
 
 const create_sse = (gh) => {
     game_hash = gh;
-    console.log(second + "update?nick=" + logged_username + "&game=" + gh);
-    current_game = new EventSource(second + "update?nick=" + logged_username + "&game=" + gh);
+    console.log(server + "update?nick=" + logged_username + "&game=" + gh);
+    current_game = new EventSource(server + "update?nick=" + logged_username + "&game=" + gh);
     current_game.onopen = () => {
-        console.log("game notifier up");
+        /* if by any means i wanna do something here (unlikely) */
     }
     current_game.onmessage = (e) => {
-        console.log(e);
         let data = JSON.parse(e.data);
         parse_game_data(data);
     }

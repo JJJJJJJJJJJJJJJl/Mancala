@@ -78,22 +78,22 @@ const add_click_holes = () => {
     }
 }
 
-const init_game = () => {
+const init_game = async () => {
     game = new Game([], get_player1(), -1, get_holes_number(), get_holes_value(), get_game_mode(), 0);
     if(game.mode == 'irl' || game.mode == 'ai' || game.mode == 'jjjjjj_ai'){
         game.player2 = get_player2();
         game.player_move = get_initial_player();
         game.on = 1;
+        game.start_game();
+        add_click_holes();
     }
     else if(game.mode == 'online'){
-        if(logged_username == undefined || logged_password == undefined){
-            document.getElementById("playing").innerText = "unable to play online, you must be logged";
+        if(logged_username == "" || logged_password == ""){
+            document.getElementById("playing").innerText = "to play online you must insert both nickname and password";
             return;
         }
         join_game(777, logged_username, logged_password, game.holes_number, game.holes_value);
     }
-    game.start_game();
-    add_click_holes();
     if(game.player_move == game.player2 && (game.mode == "ai" || game.mode == 'jjjjjj_ai')) turn();
 }
 
@@ -632,7 +632,7 @@ const set_playing = (entity) => {
     const up_holes = document.getElementById("up_holes");
     const down_hole = document.getElementById("down_holes");
 
-    playing.innerText = "Playing: " + game.player_move;
+    playing.innerText = "Turn: " + game.player_move;
     if(game.player_move == game.player1){
         up_holes.style.borderTopColor = "rgba(246, 191, 240, 0.548)"
         down_hole.style.borderBottomColor = "rgba(122, 27, 153, 0.39)";

@@ -1,13 +1,10 @@
 const notify = (hole) => {
-    fetch(second + "notify", {
+    fetch(server + "notify", {
         method: 'POST',
         body: JSON.stringify({nick: logged_username, password: logged_password, game: game_hash, move: hole})
     })
-    .then(res => {
-        return res.json();
-    })
-    .then(data => {
-        console.log(data);
+    .then(() => {
+        console.log("move on hole " + hole);
     })
     .catch(err => {
         console.log(err);

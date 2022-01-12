@@ -131,11 +131,15 @@ body {
     cursor: pointer;
 }
 
+#leave_button:hover{
+    cursor: pointer;
+}
+
 #reset_board_button:hover {
     cursor: pointer;
 }
 
-.game_content {
+#game_content {
     display: flex;
     flex-direction: column;
     justify-content: space-evenly;
@@ -143,15 +147,27 @@ body {
     margin-bottom: 50vh;
 }
 
-.game_setters{
+#game_setters{
     display: flex;
     flex-direction: column;
     align-items: center;
 }
 
+#game_control{
+    display: flex;
+}
+
 .jjjjjj{
     width: 20vw;
     float: left;
+}
+
+#clean_board:hover{
+    cursor: pointer;
+}
+
+#online_game_status{
+    margin-top: 5vh;
 }
 
 footer{

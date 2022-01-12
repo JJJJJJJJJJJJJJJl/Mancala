@@ -9,14 +9,14 @@ let rules_button = document.getElementById("rules_button");
 let play_button = document.getElementById("play_button");
 //let reset_board_button = document.getElementById("reset_board_button");
 let start_game_button = document.getElementById("start_game_button");
-let login_button = document.getElementById("login_button");
+//let login_button = document.getElementById("login_button");
 let register_button = document.getElementById("register_button");
 
 //close popup buttons
 let close_rules_popup = document.getElementsByClassName("close")[0];
 let close_play_popup = document.getElementsByClassName("close")[1];
 let close_register_popup = document.getElementsByClassName("close")[2];
-let close_login_popup = document.getElementsByClassName("close")[3];
+/* let close_login_popup = document.getElementsByClassName("close")[3]; */
 
 //initialize game
 start_game_button.onclick = () => {
@@ -37,7 +37,7 @@ start_game_button.onclick = () => {
 rules_button.onclick = () => {
   play_popup.style.display = "none";
   register_popup.style.display = "none";
-  login_popup.style.display = "none";
+  //login_popup.style.display = "none";
   rules_popup.style.display = "block";
 }
 
@@ -45,23 +45,23 @@ rules_button.onclick = () => {
 play_button.onclick = () => {
   rules_popup.style.display = "none";
   register_popup.style.display = "none";
-  login_popup.style.display = "none";
+  //login_popup.style.display = "none";
   play_popup.style.display = "block";
 }
 
 //open login popup
-login_button.onclick = () => {
+/* login_button.onclick = () => {
   rules_popup.style.display = "none";
   register_popup.style.display = "none";
   register_popup.style.display = "none";
   login_popup.style.display = "block";
-}
+} */
 
 //open register popup
 register_button.onclick = () => {
   rules_popup.style.display = "none";
   play_popup.style.display = "none";
-  login_popup.style.display = "none";
+  //login_popup.style.display = "none";
   register_popup.style.display = "block";
 }
 
@@ -76,9 +76,9 @@ close_play_popup.onclick = () => {
 }
 
 //close login popup by clicking X
-close_login_popup.onclick = () => {
+/* close_login_popup.onclick = () => {
   login_popup.style.display = "none";
-}
+} */
 
 //close register popup by clicking X
 close_register_popup.onclick = () => {
@@ -99,7 +99,7 @@ window.onclick = function(event) {
     clean_register_update_message();
    register_popup.style.display = "none";
   }
-  else if(event.target == login_popup){
+  /* else if(event.target == login_popup){
    login_popup.style.display = "none";
-  }
+  } */
 }
