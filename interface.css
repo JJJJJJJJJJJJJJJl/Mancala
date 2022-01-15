@@ -101,6 +101,37 @@ body {
     cursor: pointer;
 }
 
+#ranking_table{
+    display: flex;
+}
+
+#ranking_nicks{
+    width: 15vw;
+}
+
+#nicks_p{
+    font-size: 1.1vmax;
+    color: black;
+}
+
+#ranking_wins{
+    width: 10vw;
+}
+
+#wins_p{
+    font-size: 1.1vmax;
+    color: black;
+}
+
+#ranking_games{
+    width: 10vw;
+}
+
+#games_p{
+    font-size: 1.1vmax;
+    color: black;
+}
+
 .game_configs{
     display: flex;
     flex-direction: column;
@@ -132,10 +163,6 @@ body {
 }
 
 #leave_button:hover{
-    cursor: pointer;
-}
-
-#reset_board_button:hover {
     cursor: pointer;
 }
 

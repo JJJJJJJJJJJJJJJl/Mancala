@@ -10,12 +10,12 @@
     <body class="unselectable">
         <div id="menu">
             <div class="logo">
-                <img src="playboy.png" id="playboy_logo">
+                <img src="playboy.png" id="playboy_logo" alt="playboy logo">
                 Mancala
             </div>
             
             <div class="menu_option" id="rules_button">Rules</div>
-            <div class="menu_option" id="scoreboard_button">Scoreboard</div>
+            <div class="menu_option" id="ranking_button">Ranking</div>
             <!-- <div class="menu_option" id="profile_button">Profile</div>
             <div class="menu_option" id="login_button">Login</div> -->
             <div class="menu_option" id="register_button">Register</div>
@@ -64,25 +64,31 @@
               <span class="close">&times;</span>
               <div id="register_input">
                   <p>username</p>
-                  <input id="register_username" class="input"></input>
+                  <input id="register_username" class="input">
                   <p>password</p>
-                  <input id="register_password" class="input" type="password"></input>
+                  <input id="register_password" class="input" type="password">
                   <div id="register_submit" class="submit">submit</div>
               </div>
             </div>
         </div>
-        <div id="login_popup" class="popup">
+        <div id="ranking_popup" class="popup">
+            <div class="popup_content">
+              <span class="close">&times;</span>
+              <div id="ranking_table"></div>
+            </div>
+        </div>
+        <!-- <div id="login_popup" class="popup">
             <div class="popup_content">
               <span class="close">&times;</span>
               <div id="login_input">
                   <p>username</p>
-                  <input id="login_username" class="input"></input>
+                  <input id="login_username" class="input">
                   <p>password</p>
-                  <input id="login_password" class="input" type="password"></input>
+                  <input id="login_password" class="input" type="password">
                   <div id="login_submit" class="submit">login</div>
               </div>
             </div>
-        </div>
+        </div> -->
         <div id="game_content">
             <div id="game_setters">
                 <div id="game_control">
@@ -90,9 +96,9 @@
                 </div>
                 <!-- <h3 id="reset_board_button">&#x1F987; RESET BOARD &#x1F987;</h3> -->
                 <div class="jjjjjj"><p>username</p></div>
-                <input id="nick" class="input"></input>
+                <input id="nick" class="input">
                 <div class="jjjjjj"><p>password (online mode)</p></div>
-                <input id="pw" class="input" type="password"></input>
+                <input id="pw" class="input" type="password">
                 <p id="online_game_status"></p>
                 <p id="playing"></p>
             </div>
@@ -110,6 +116,7 @@
         <script src="notify.js"></script>
         <script src="game_handler.js"></script>
         <script src="leave.js"></script>
+        <script src="ranking.js"></script>
         <script src="env.js"></script>
     </body>
 </html>
