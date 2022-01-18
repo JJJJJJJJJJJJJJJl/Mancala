@@ -48,35 +48,25 @@ read_curid();
 /* SERVER LOGIC */
 const requestListener = function (req, res) {
     if(req.method == 'GET'){
-        console.log("get");
         let gamehash = req.url.substring(1, req.url.length).split('=')[2];
+        res.writeHead(200, {
+            'Content-Type' : 'text/event-stream',
+            'Cache-Control' : 'no-cache',
+            'Connection' : 'keep-alive',
+            "Access-Control-Allow-Origin": "*"
+        });
+        responses[gamehash].push(res);
         if(active_games[gamehash] != undefined){
-            console.log("res: " + res);
-            if(active_games[gamehash].h == 0){
-                res.writeHead(200, {
-                    'Content-Type' : 'text/event-stream',
-                    'Cache-Control' : 'no-cache',
-                    'Connection' : 'keep-alive',
-                    "Access-Control-Allow-Origin": "*"
-                });
-            }
-            const p1 = active_games[gamehash].player1;
-            const p2 = active_games[gamehash].player2;
-            responses[gamehash].push(res);
-            update.update_players(responses, gamehash, p1, p2, active_games);
-        }
-        else{
-            res.writeHead(200, {
-                'Content-Type' : 'text/event-stream',
-                'Cache-Control' : 'no-cache',
-                'Connection' : 'keep-alive',
-                "Access-Control-Allow-Origin": "*"
-            });
-            responses[gamehash].push(res);
+            update.update_players(
+                responses,
+                gamehash,
+                active_games[gamehash].player1,
+                active_games[gamehash].player2,
+                active_games[gamehash]
+            );
         }
     }
     else if(req.method == 'POST'){
-        console.log("url: " + req.url);
         if(req.url == "/register"){
             console.log("register");
             read_users();
@@ -131,8 +121,6 @@ const requestListener = function (req, res) {
             req.on('data', (chunk) => {
                 data = JSON.parse(chunk);
                 const type = "normal_game_" + (data.size<<1) + "_" + data.initial;
-                console.log(type);
-                console.log("type: " + type);
                 if(type == 'normal_game_10_3'){
                     holes = 5;
                     hole_value = 3;
@@ -140,16 +128,14 @@ const requestListener = function (req, res) {
                     if(queue.normal_game_103.length(type) != 0){
                         if(queue.normal_game_103.peek(type) != data.nick){
                             const player_ready = queue.normal_game_103.dequeue(type);
-                            //send info to waiting player
+                            console.log("(" + player_ready.game_hash + ")" + data.nick + " joined to " + player_ready.username + " on: " + type);
     
-                            //send info to player that just joined
                             let player1_board = [];
                             let player2_board = [];
                             for(let i=0; i<holes; i++){
                                 player1_board[i] = hole_value
                                 player2_board[i] = hole_value;
                             }
-                            console.log("omg: " + player_ready.game_hash);
                             active_games[player_ready.game_hash] = {
                                     player1: player_ready.username, 
                                     p1board: player1_board,
@@ -157,7 +143,7 @@ const requestListener = function (req, res) {
                                     player2: data.nick,
                                     p2board: player2_board,
                                     p2warehouse: 0,
-                                    h: 0};
+                                    turn: player_ready.username};
                             res.writeHead(200, headers);
                             res.end(JSON.stringify({game: player_ready.game_hash, status: "matched", opp: player_ready.username}));
                         }
@@ -165,7 +151,7 @@ const requestListener = function (req, res) {
                     //enqueue player
                     else{
                         //generate game hash
-                        let ghash = game_hash.generate_game_hash(data.size, data.initial);
+                        let ghash = game_hash.generate_game_hash(data.size, data.initial, Date.now());
                         responses[ghash] = new Array();
                         queue.normal_game_103.enqueue(type, data.nick, ghash);
                         res.writeHead(200, headers);
@@ -175,11 +161,14 @@ const requestListener = function (req, res) {
             });
         }
         else if(req.url == '/notify'){
+            res.writeHead(200, headers);
+            console.log("NOTIFY");
             req.on('data', (chunk) => {
                 const notify_data = JSON.parse(chunk);
                 const move = notify_data.move;
                 const active_game = active_games[notify_data.game];
                 let board;
+                let pmres;
                 if(active_game.player1 == notify_data.nick){
                     board = manager.generate_board(
                         active_game.p1board,
@@ -187,16 +176,47 @@ const requestListener = function (req, res) {
                         active_game.p2board,
                         active_game.p2warehouse,
                         active_game.p1board.length);
+                        console.log("board: " + board);
+                        pmres = manager.process_move(
+                            board,
+                            (active_game.p1board.length<<1) - move,
+                            active_game.p1board[move],
+                            active_game.p1board.length<<1);
+                        console.log("board: " + board);
+                        update.update_players(
+                            responses,
+                            notify_data.game,
+                            active_game.player1,
+                            active_game.player2,
+                            active_games[notify_data.game],
+                            board,
+                            pmres);
                 }
                 else{
                     board = manager.generate_board(
                         active_game.p2board,
                         active_game.p2warehouse,
                         active_game.p1board,
-                        active_game.p1warehouse);
+                        active_game.p1warehouse,
+                        active_game.p2board.length);
+                        console.log("board: " + board);
+                        pmres = manager.process_move(
+                            board,
+                            (active_game.p2board.length<<1) - move,
+                            active_game.p2board[move],
+                            active_game.p2board.length<<1);
+                        console.log("board: " + board);
+                        update.update_players(
+                            responses,
+                            notify_data.game,
+                            active_game.player2,
+                            active_game.player1,
+                            active_games[notify_data.game],
+                            board,
+                            pmres);
                 }
-                console.log("board: " + board);
             });
+            res.end('nice move');
         }
         else{
             res.writeHead(400);

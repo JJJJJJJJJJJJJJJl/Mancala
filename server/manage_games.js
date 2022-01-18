@@ -44,21 +44,74 @@ const remove_game = (games, target_hash) => {
 }
 
 const generate_board = (p1_side, p1_warehouse, p2_side, p2_warehouse, holes) => {
-    console.log("holes: " + holes);
     let board = [];
-    for(let i=0; i<holes; i++){
-        board[i] = p2_side[i];
-    }
-    board[holes] = p2_warehouse;
     for(let i=0, j=holes<<1; i<holes, j>holes; i++, j--){
         board[j] = p1_side[i];
+        board[i] = p2_side[i];
     }
-    board[(holes<<1)+1] = p1_warehouse;
+    board[holes] = p1_warehouse;
+    board[(holes<<1)+1] = p2_warehouse;
     return board;
+}
+
+const process_move = (board, hole_id, hole_value, holes_number) => {
+    let switch_player = 1;
+    let cur_hole = parseInt(hole_id) == 0 ? holes_number + 1 : parseInt(hole_id) - 1;
+    //traversing board *hole_value* times
+    for(let i=0; i<hole_value; i++){
+        if(cur_hole == holes_number+1){
+            i--;
+            cur_hole--;
+        }
+        //right warehouse was reached and its value is incremented by one
+        else if(cur_hole == holes_number>>1){
+            //player 1 last piece landed on its own warehouse so he keeps playing
+            if(i == hole_value-1){
+                switch_player = 0;
+            }
+            const right_warehouse_value = board[holes_number>>1];
+            //updating board struct
+            board[cur_hole--] = right_warehouse_value + 1;
+        }
+        //*cur_hole* hole was reached and its value is incremented by one 
+        else{
+            const value = board[cur_hole];
+            //when player 1 last iteration move lands on one of its own side empty hole
+            //he then gets that last piece plus the opponent opposite hole pieces on his warehouse (right)
+            if(i == hole_value-1 && value == 0 && cur_hole > holes_number>>1){
+                    const right_warehouse_value = board[holes_number>>1];
+                    const opposite_hole_value = board[holes_number-cur_hole];
+                    //updating board struct
+                    board[holes_number-cur_hole] = 0;
+                    board[cur_hole--] = 0;
+                    board[holes_number>>1] = right_warehouse_value + opposite_hole_value + 1;
+
+            }
+            //regular move
+            else{
+                //updating board struct
+                board[cur_hole--] = value + 1;
+            }
+        }
+
+        //initial hole value is decremented by one each iteration
+        //a move might iterate more than the *hole_value* (when it skips the opponent warehouse)
+        //also if a move iteration goes through the clicked hole the value isnt decreased (only increased) {if i get confused coming back to this later, visualizing this case helps a lot}
+        if(board[hole_id] > 0 && cur_hole+1 !== hole_id){
+            board[hole_id]--;
+        }
+        //cur_hole reached -1 value that means left warehouse
+        if(cur_hole == -1){
+            cur_hole = holes_number + 1;
+        }
+    }
+    if(switch_player == 1) return 1;
+    else return 0;
 }
 
 module.exports = {
     find_game_player,
     remove_game,
+    process_move,
     generate_board,
 }

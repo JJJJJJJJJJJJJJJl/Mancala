@@ -597,7 +597,7 @@ const on_hole_click = (board, hole_id, entity) => {
         //initial hole value is decremented by one each iteration
         //a move might iterate more than the *hole_value* (when it skips the opponent warehouse)
         //also if a move iteration goes through the clicked hole the value isnt decreased (only increased) {if i get confused coming back to this later, visualizing this case helps a lot}
-        if(board[hole_id] > 0 && cur_hole+1 !== hole_id){
+        if(board[hole_id] > 0 && cur_hole+1 != hole_id){
             if(entity == 420){
                 board[hole_id]--;
             }
