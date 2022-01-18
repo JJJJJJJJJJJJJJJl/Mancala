@@ -5,10 +5,11 @@ const create_sse = (gh) => {
     console.log(server + "update?nick=" + logged_username + "&game=" + gh);
     current_game = new EventSource(server + "update?nick=" + logged_username + "&game=" + gh);
     current_game.onopen = () => {
-        /* if by any means i wanna do something here (unlikely) */
+        console.log("game notifier up");
     }
     current_game.onmessage = (e) => {
         let data = JSON.parse(e.data);
+        console.log(data);
         parse_game_data(data);
     }
     current_game.onerror = (e) => {

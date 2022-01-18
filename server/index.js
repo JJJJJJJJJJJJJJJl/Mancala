@@ -1,22 +1,28 @@
+/* MODULES */
 const http = require('http');
 const fs = require('fs').promises;
 const auth = require('./auth');
 const queue = require('./queue');
-const game_hash = require('./game_hash');
+const game_hash = require('./crypto');
 const manager = require('./manage_games');
+const update = require('./update');
 
+/* SERVER STATE */
 let data;
 
 let users_file;
 let id_file;
 
 let active_games = [];
+let responses = [];
 
 const headers = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "OPTIONS, POST, GET",
 };
 
+
+/* FILE MANAGE */
 const read_users = (file) => {
     fs.readFile("users.json")
     .then(content => {
@@ -39,17 +45,14 @@ const read_curid = () => {
 }
 read_curid();
 
-
+/* SERVER LOGIC */
 const requestListener = function (req, res) {
     if(req.method == 'GET'){
         console.log("get");
-        let game_index;
-        let sanned_url;
-        sanned_url = req.url.substring(1, req.url.length);
-        game_index = manager.find_game_hash(active_games, sanned_url);
-        console.log("game_index: " + game_index);
-        if(game_index != -1){
-            if(active_games[game_index].h == 0){
+        let gamehash = req.url.substring(1, req.url.length).split('=')[2];
+        if(active_games[gamehash] != undefined){
+            console.log("res: " + res);
+            if(active_games[gamehash].h == 0){
                 res.writeHead(200, {
                     'Content-Type' : 'text/event-stream',
                     'Cache-Control' : 'no-cache',
@@ -57,20 +60,10 @@ const requestListener = function (req, res) {
                     "Access-Control-Allow-Origin": "*"
                 });
             }
-            const p1 = active_games[game_index].player1;
-            const p2 = active_games[game_index].player2;
-                res.write("id: " + Date.now() + `\ndata: ${JSON.stringify(
-                    {sides: {
-                        [p1]: {
-                            warehouse: active_games[game_index].p1warehouse,
-                            holes: active_games[game_index].p1board
-                        },
-                        [p2]: {
-                            warehouse: active_games[game_index].p2warehouse,
-                            holes: active_games[game_index].p2board
-                        }
-                    },
-                    turn: [p1]})}` + '\n\n');
+            const p1 = active_games[gamehash].player1;
+            const p2 = active_games[gamehash].player2;
+            responses[gamehash].push(res);
+            update.update_players(responses, gamehash, p1, p2, active_games);
         }
         else{
             res.writeHead(200, {
@@ -79,10 +72,11 @@ const requestListener = function (req, res) {
                 'Connection' : 'keep-alive',
                 "Access-Control-Allow-Origin": "*"
             });
-            res.write("id: " + Date.now() + "\ndata: waiting for game\n\n");
+            responses[gamehash].push(res);
         }
     }
     else if(req.method == 'POST'){
+        console.log("url: " + req.url);
         if(req.url == "/register"){
             console.log("register");
             read_users();
@@ -136,14 +130,15 @@ const requestListener = function (req, res) {
             let hole_value;
             req.on('data', (chunk) => {
                 data = JSON.parse(chunk);
-                const type = "normal_game_" + data.holes_number + "_" + data.holes_value;
+                const type = "normal_game_" + (data.size<<1) + "_" + data.initial;
                 console.log(type);
+                console.log("type: " + type);
                 if(type == 'normal_game_10_3'){
                     holes = 5;
                     hole_value = 3;
                     //queue not empty so match player with waiting player
                     if(queue.normal_game_103.length(type) != 0){
-                        if(queue.normal_game_103.peek(type) != data.username){
+                        if(queue.normal_game_103.peek(type) != data.nick){
                             const player_ready = queue.normal_game_103.dequeue(type);
                             //send info to waiting player
     
@@ -154,14 +149,15 @@ const requestListener = function (req, res) {
                                 player1_board[i] = hole_value
                                 player2_board[i] = hole_value;
                             }
-                            active_games.push({game: player_ready.game_hash,
+                            console.log("omg: " + player_ready.game_hash);
+                            active_games[player_ready.game_hash] = {
                                     player1: player_ready.username, 
                                     p1board: player1_board,
                                     p1warehouse: 0,
-                                    player2: data.username,
+                                    player2: data.nick,
                                     p2board: player2_board,
                                     p2warehouse: 0,
-                                    h: 0});
+                                    h: 0};
                             res.writeHead(200, headers);
                             res.end(JSON.stringify({game: player_ready.game_hash, status: "matched", opp: player_ready.username}));
                         }
@@ -169,13 +165,37 @@ const requestListener = function (req, res) {
                     //enqueue player
                     else{
                         //generate game hash
-                        let ghash = game_hash.generate_game_hash(data.holes_number, data.holes_value, Date.now());
-                        console.log("hash: "+ghash);
-                        queue.normal_game_103.enqueue(type, data.username, ghash);
+                        let ghash = game_hash.generate_game_hash(data.size, data.initial);
+                        responses[ghash] = new Array();
+                        queue.normal_game_103.enqueue(type, data.nick, ghash);
                         res.writeHead(200, headers);
                         res.end(JSON.stringify({game: ghash, status: "waiting"}));                        
                     }
                 } 
+            });
+        }
+        else if(req.url == '/notify'){
+            req.on('data', (chunk) => {
+                const notify_data = JSON.parse(chunk);
+                const move = notify_data.move;
+                const active_game = active_games[notify_data.game];
+                let board;
+                if(active_game.player1 == notify_data.nick){
+                    board = manager.generate_board(
+                        active_game.p1board,
+                        active_game.p1warehouse,
+                        active_game.p2board,
+                        active_game.p2warehouse,
+                        active_game.p1board.length);
+                }
+                else{
+                    board = manager.generate_board(
+                        active_game.p2board,
+                        active_game.p2warehouse,
+                        active_game.p1board,
+                        active_game.p1warehouse);
+                }
+                console.log("board: " + board);
             });
         }
         else{
