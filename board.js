@@ -490,7 +490,7 @@ const on_hole_click = (board, hole_id, entity) => {
                     const right_warehouse_p_value = document.getElementById("right_warehouse_value");
                     const right_warehouse_pieces_area = document.getElementById("right_warehouse_pieces_area");
 
-                    //updaing ui
+                    //updating ui
                     right_warehouse_p_value.innerText = right_warehouse_value + 1;
                     //updating board struct
                     board[cur_hole--] = right_warehouse_value + 1;
@@ -506,8 +506,6 @@ const on_hole_click = (board, hole_id, entity) => {
             //when player 2 last iteration move lands on one of its own side empty hole
             //he then gets that last piece plus the opponent opposite hole pieces on his warehouse (left)
             if(i == hole_value-1 && value == 0 && cur_hole < game.holes_number>>1 && game.player_move == game.player2){
-                //player 2 plays next turn aswell
-                switch_player_bool = 0;
                 
                 //ai search space processing related
                 if(entity == 420){
@@ -544,8 +542,6 @@ const on_hole_click = (board, hole_id, entity) => {
             //when player 1 last iteration move lands on one of its own side empty hole
             //he then gets that last piece plus the opponent opposite hole pieces on his warehouse (right)
             else if(i == hole_value-1 && value == 0 && cur_hole > game.holes_number>>1 && game.player_move == game.player1){
-                //player 1 plays next turn aswell
-                switch_player_bool = 0;
 
                 if(entity == 420){
                     board[game.holes_number>>1] += board[game.holes_number-cur_hole] + 1;
