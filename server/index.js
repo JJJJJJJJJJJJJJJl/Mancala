@@ -48,13 +48,40 @@ read_curid();
 /* SERVER LOGIC */
 const requestListener = function (req, res) {
     if(req.method == 'GET'){
+        console.log(req.url);
         if(req.url == '/'){
-            res.writeHead(200, headers);
-            res.write("hellow motherfucker filho de 30 putas");
-            res.end();
+            res.writeHead(200, {"Access-Control-Allow-Origin": "*",
+            "Content-Type": "text/html"});
+            fs.readFile('../client/index.html')
+            .then(content => {
+                res.write(content);
+                res.end();
+            });
         }
-        else{
-
+        else if(req.url.includes('.css')){
+            let file = req.url.substring(1, req.url.length);
+            res.writeHead(200, {
+            "Content-Type": "text/css"});
+            fs.readFile('../client/' + file)
+            .then(content => {
+                res.write(content);
+                res.end();
+            })
+            .catch(err => console.log(err));
+        }
+        else if(req.url.includes('.js')){
+            let file = req.url.substring(1, req.url.length);
+            res.writeHead(200, {
+            "Content-Type": "text/javascript"});
+            fs.readFile('../client/' + file)
+            .then(content => {
+                res.write(content);
+                res.end();
+            })
+            .catch(err => console.log(err));
+        }
+        else if(req.url.includes('update')){
+            console.log("nao!");
             let gamehash = req.url.substring(1, req.url.length).split('=')[2];
             res.writeHead(200, {
                 'Content-Type' : 'text/event-stream',
@@ -75,6 +102,7 @@ const requestListener = function (req, res) {
         }
     }
     else if(req.method == 'POST'){
+        console.log(req.url);
         if(req.url == "/register"){
             console.log("register");
             read_users();
