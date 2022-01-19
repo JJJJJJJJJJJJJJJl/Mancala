@@ -120,44 +120,50 @@ const requestListener = function (req, res) {
             let hole_value;
             req.on('data', (chunk) => {
                 data = JSON.parse(chunk);
-                const type = "normal_game_" + (data.size<<1) + "_" + data.initial;
-                if(type == 'normal_game_10_3'){
-                    holes = 5;
-                    hole_value = 3;
-                    //queue not empty so match player with waiting player
-                    if(queue.normal_game_103.length(type) != 0){
-                        if(queue.normal_game_103.peek(type) != data.nick){
-                            const player_ready = queue.normal_game_103.dequeue(type);
-                            console.log("(" + player_ready.game_hash + ")" + data.nick + " joined to " + player_ready.username + " on: " + type);
-    
-                            let player1_board = [];
-                            let player2_board = [];
-                            for(let i=0; i<holes; i++){
-                                player1_board[i] = hole_value
-                                player2_board[i] = hole_value;
+                if(auth.check_login(users_file, data.nick, data.password) == -1){
+                    res.writeHead(400, headers);
+                    res.end(JSON.stringify({error: 'invalid user values'}));
+                }
+                else{
+                    const type = "normal_game_" + (data.size<<1) + "_" + data.initial;
+                    if(type == 'normal_game_10_3'){
+                        holes = 5;
+                        hole_value = 3;
+                        //queue not empty so match player with waiting player
+                        if(queue.normal_game_103.length(type) != 0){
+                            if(queue.normal_game_103.peek(type) != data.nick){
+                                const player_ready = queue.normal_game_103.dequeue(type);
+                                console.log("(" + player_ready.game_hash + ")" + data.nick + " joined to " + player_ready.username + " on: " + type);
+        
+                                let player1_board = [];
+                                let player2_board = [];
+                                for(let i=0; i<holes; i++){
+                                    player1_board[i] = hole_value
+                                    player2_board[i] = hole_value;
+                                }
+                                active_games[player_ready.game_hash] = {
+                                        player1: player_ready.username, 
+                                        p1board: player1_board,
+                                        p1warehouse: 0,
+                                        player2: data.nick,
+                                        p2board: player2_board,
+                                        p2warehouse: 0,
+                                        turn: player_ready.username};
+                                res.writeHead(200, headers);
+                                res.end(JSON.stringify({game: player_ready.game_hash, status: "matched", opp: player_ready.username}));
                             }
-                            active_games[player_ready.game_hash] = {
-                                    player1: player_ready.username, 
-                                    p1board: player1_board,
-                                    p1warehouse: 0,
-                                    player2: data.nick,
-                                    p2board: player2_board,
-                                    p2warehouse: 0,
-                                    turn: player_ready.username};
-                            res.writeHead(200, headers);
-                            res.end(JSON.stringify({game: player_ready.game_hash, status: "matched", opp: player_ready.username}));
                         }
-                    }
-                    //enqueue player
-                    else{
-                        //generate game hash
-                        let ghash = game_hash.generate_game_hash(data.size, data.initial, Date.now());
-                        responses[ghash] = new Array();
-                        queue.normal_game_103.enqueue(type, data.nick, ghash);
-                        res.writeHead(200, headers);
-                        res.end(JSON.stringify({game: ghash, status: "waiting"}));                        
-                    }
-                } 
+                        //enqueue player
+                        else{
+                            //generate game hash
+                            let ghash = game_hash.generate_game_hash(data.size, data.initial, Date.now());
+                            responses[ghash] = new Array();
+                            queue.normal_game_103.enqueue(type, data.nick, ghash);
+                            res.writeHead(200, headers);
+                            res.end(JSON.stringify({game: ghash, status: "waiting"}));                        
+                        }
+                    } 
+                }
             });
         }
         else if(req.url == '/notify'){
@@ -226,4 +232,4 @@ const requestListener = function (req, res) {
 }
 
 const server = http.createServer(requestListener);
-server.listen(8080);
+server.listen(9026);

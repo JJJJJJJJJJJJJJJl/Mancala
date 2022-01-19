@@ -45,9 +45,9 @@ const remove_game = (games, target_hash) => {
 
 const generate_board = (p1_side, p1_warehouse, p2_side, p2_warehouse, holes) => {
     let board = [];
-    for(let i=0, j=holes<<1; i<holes, j>holes; i++, j--){
+    for(let i=0, j=holes<<1, k=holes-1; i<holes, j>holes, k>-1; i++, j--, k--){
         board[j] = p1_side[i];
-        board[i] = p2_side[i];
+        board[k] = p2_side[i];
     }
     board[holes] = p1_warehouse;
     board[(holes<<1)+1] = p2_warehouse;

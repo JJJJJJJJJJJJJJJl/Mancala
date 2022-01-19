@@ -2,6 +2,9 @@ const update_players = (responses, gamehash, p1, p2, game, board, switch_turn) =
     if(board != undefined){
         const size = game.p1board.length;
         //holes
+        console.log("BEFORE");
+        console.log("p1board: " + game.p1board);
+        console.log("p2board: " + game.p2board);
         for(let i=0, j=size<<1, k=size-1; i<size, j>size, k>-1; i++, j--, k--){
             if(game.player1 == p1){
                 game.p1board[i] = board[j];
