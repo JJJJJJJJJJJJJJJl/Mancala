@@ -48,22 +48,30 @@ read_curid();
 /* SERVER LOGIC */
 const requestListener = function (req, res) {
     if(req.method == 'GET'){
-        let gamehash = req.url.substring(1, req.url.length).split('=')[2];
-        res.writeHead(200, {
-            'Content-Type' : 'text/event-stream',
-            'Cache-Control' : 'no-cache',
-            'Connection' : 'keep-alive',
-            "Access-Control-Allow-Origin": "*"
-        });
-        responses[gamehash].push(res);
-        if(active_games[gamehash] != undefined){
-            update.update_players(
-                responses,
-                gamehash,
-                active_games[gamehash].player1,
-                active_games[gamehash].player2,
-                active_games[gamehash]
-            );
+        if(req.url == '/'){
+            res.writeHead(200, headers);
+            res.write("hellow motherfucker filho de 30 putas");
+            res.end();
+        }
+        else{
+
+            let gamehash = req.url.substring(1, req.url.length).split('=')[2];
+            res.writeHead(200, {
+                'Content-Type' : 'text/event-stream',
+                'Cache-Control' : 'no-cache',
+                'Connection' : 'keep-alive',
+                "Access-Control-Allow-Origin": "*"
+            });
+            responses[gamehash].push(res);
+            if(active_games[gamehash] != undefined){
+                update.update_players(
+                    responses,
+                    gamehash,
+                    active_games[gamehash].player1,
+                    active_games[gamehash].player2,
+                    active_games[gamehash]
+                );
+            }
         }
     }
     else if(req.method == 'POST'){
