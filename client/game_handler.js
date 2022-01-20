@@ -1,11 +1,12 @@
 let game_hash;
 let opp;
 
-const parse_game_data = (data) => {
+const parse_game_data = (data, current_game) => {
     if(data.winner != undefined){
         show_game_result(data)
         clean_board_option();
         game_hash = undefined;
+        remove_leave_button();
     }
     else{
         const pmove = data.board["turn"];
@@ -49,8 +50,8 @@ const show_game_result = (data) => {
     document.getElementById("playing").innerText = "";
 }
 
-const leave_queue = () => {
-    ogstatus.innerText = "unqueued";
+const clean_status = () => {
+    ogstatus.innerText = "";
 }
 
 const waiting = () => {
@@ -73,7 +74,7 @@ const clean_board_option = () => {
     clean_board.innerHTML = "&#x1F987; CLEAN BOARD &#x1F987;";
 
     clean_board.onclick = () => {
-        clean_div(document.getElementById("universe"));
+        clean_div(document.getElementById("game_container"));
         container.removeChild(container.lastChild);
     };
 

@@ -10,9 +10,10 @@ const create_sse = (gh) => {
     current_game.onmessage = (e) => {
         let data = JSON.parse(e.data);
         console.log(data);
-        parse_game_data(data);
+        parse_game_data(data, current_game);
     }
     current_game.onerror = (e) => {
         console.log("error: " + e);
+        current_game.close();
     }
 }

@@ -80,24 +80,35 @@ const requestListener = function (req, res) {
             })
             .catch(err => console.log(err));
         }
-        else if(req.url.includes('update')){
-            console.log("nao!");
-            let gamehash = req.url.substring(1, req.url.length).split('=')[2];
+        else if(req.url.includes('.png')){
+            let file = req.url.substring(1, req.url.length);
             res.writeHead(200, {
-                'Content-Type' : 'text/event-stream',
-                'Cache-Control' : 'no-cache',
-                'Connection' : 'keep-alive',
-                "Access-Control-Allow-Origin": "*"
-            });
-            responses[gamehash].push(res);
-            if(active_games[gamehash] != undefined){
-                update.update_players(
-                    responses,
-                    gamehash,
-                    active_games[gamehash].player1,
-                    active_games[gamehash].player2,
-                    active_games[gamehash]
-                );
+            "Content-Type": "image/png"});
+            fs.readFile('../client/' + file)
+            .then(content => {
+                res.end(content);
+            })
+            .catch(err => console.log(err));
+        }
+        else if(req.url.includes('update')){
+            let gamehash = req.url.substring(1, req.url.length).split('=')[2];
+            if(responses[gamehash] != undefined){
+                res.writeHead(200, {
+                    'Content-Type' : 'text/event-stream',
+                    'Cache-Control' : 'no-cache',
+                    'Connection' : 'keep-alive',
+                    "Access-Control-Allow-Origin": "*"
+                });
+                responses[gamehash].push(res);
+                if(active_games[gamehash] != undefined){
+                    update.update_players_game(
+                        responses,
+                        gamehash,
+                        active_games[gamehash].player1,
+                        active_games[gamehash].player2,
+                        active_games[gamehash]
+                    );
+                }
             }
         }
     }
@@ -109,16 +120,16 @@ const requestListener = function (req, res) {
             read_curid();
             req.on('data', (chunk) => {
                 data = JSON.parse(chunk);
-                if(auth.check_username(data.username) == 1){
+                if(auth.check_username(data.nick) == 1){
                     res.writeHead(400, headers);
                     res.end(JSON.stringify({error: "invalid username"}));
                 }
-                else if(auth.find(users_file, data.username) != -1){
+                else if(auth.find(users_file, data.nick) != -1){
                     res.writeHead(400, headers);
                     res.end(JSON.stringify({error: "username already exists"}));
                 }
                 else{
-                    users_file.usernames[id_file + 1] = data.username;
+                    users_file.usernames[id_file + 1] = data.nick;
                     users_file.passwords[id_file + 1] = data.password;
                     users_file.wins[id_file + 1] = 0;
                     users_file.games[id_file + 1] = 0;
@@ -161,45 +172,90 @@ const requestListener = function (req, res) {
                     res.end(JSON.stringify({error: 'invalid user values'}));
                 }
                 else{
-                    const type = "normal_game_" + (data.size<<1) + "_" + data.initial;
-                    if(type == 'normal_game_10_3'){
-                        holes = 5;
-                        hole_value = 3;
-                        //queue not empty so match player with waiting player
-                        if(queue.normal_game_103.length(type) != 0){
-                            if(queue.normal_game_103.peek(type) != data.nick){
-                                const player_ready = queue.normal_game_103.dequeue(type);
-                                console.log("(" + player_ready.game_hash + ")" + data.nick + " joined to " + player_ready.username + " on: " + type);
-        
-                                let player1_board = [];
-                                let player2_board = [];
-                                for(let i=0; i<holes; i++){
-                                    player1_board[i] = hole_value
-                                    player2_board[i] = hole_value;
-                                }
-                                active_games[player_ready.game_hash] = {
-                                        player1: player_ready.username, 
-                                        p1board: player1_board,
-                                        p1warehouse: 0,
-                                        player2: data.nick,
-                                        p2board: player2_board,
-                                        p2warehouse: 0,
-                                        turn: player_ready.username};
-                                res.writeHead(200, headers);
-                                res.end(JSON.stringify({game: player_ready.game_hash, status: "matched", opp: player_ready.username}));
+                    holes = data.size;
+                    hole_value = data.initial;
+                    let q;
+                    if(holes == 5 && hole_value == 3) q = queue.normal_game_103;
+                    if(holes == 6 && hole_value == 3) q = queue.normal_game_123;
+                    if(holes == 5 && hole_value == 5) q = queue.normal_game_105;
+                    if(holes == 6 && hole_value == 5) q = queue.normal_game_125;
+                    //queue not empty so match player with waiting player
+                    if(q.length() != 0){
+                        if(q.peek() != data.nick){
+                            const player_ready = q.dequeue();
+                            console.log("(" + player_ready.game_hash + ")" + data.nick + " joined to " + player_ready.username + " on: normal_game_103");
+    
+                            let player1_board = [];
+                            let player2_board = [];
+                            for(let i=0; i<holes; i++){
+                                player1_board[i] = hole_value
+                                player2_board[i] = hole_value;
                             }
-                        }
-                        //enqueue player
-                        else{
-                            //generate game hash
-                            let ghash = game_hash.generate_game_hash(data.size, data.initial, Date.now());
-                            responses[ghash] = new Array();
-                            queue.normal_game_103.enqueue(type, data.nick, ghash);
+                            active_games[player_ready.game_hash] = {
+                                    player1: player_ready.username, 
+                                    p1board: player1_board,
+                                    p1warehouse: 0,
+                                    player2: data.nick,
+                                    p2board: player2_board,
+                                    p2warehouse: 0,
+                                    turn: player_ready.username,
+                                    game_queue: q};
                             res.writeHead(200, headers);
-                            res.end(JSON.stringify({game: ghash, status: "waiting"}));                        
+                            res.end(JSON.stringify({game: player_ready.game_hash, status: "matched", opp: player_ready.username}));
                         }
-                    } 
+                        else{
+                            res.writeHead(400, headers);
+                            res.end(JSON.stringify({error: "maybe leave queue before requeue"}));
+                        }
+                    }
+                    //enqueue player
+                    else{
+                        //generate game hash
+                        let ghash = game_hash.generate_game_hash(data.size, data.initial, data.nick);
+                        responses[ghash] = new Array();
+                        q.enqueue(data.nick, ghash);
+                        res.writeHead(200, headers);
+                        res.end(JSON.stringify({game: ghash, status: "waiting"}));                        
+                    }
                 }
+            });
+        }
+        else if(req.url == '/leave'){
+            req.on('data', (chunk) => {
+                res.writeHead(200, headers);
+                data = JSON.parse(chunk);
+                const gh = data.game;
+                //leave game
+                if(active_games[gh] != undefined){
+                    console.log(data.nick + " left " + data.game);
+
+                    const winner = active_games[gh].player1 == data.nick ?
+                    active_games[gh].player2 : active_games[gh].player1;
+
+                    update.update_players_end(responses, gh, winner);
+
+                    active_games[gh] = undefined;
+                }
+                //leave queue
+                else{
+                    if(queue.normal_game_103.peek() == data.nick){
+                        queue.normal_game_103.dequeue()
+                    }
+                    else if(queue.normal_game_105.peek() == data.nick){
+                        queue.normal_game_105.dequeue()
+                    }
+                    else if(queue.normal_game_123.peek() == data.nick){
+                        queue.normal_game_123.dequeue()
+                    }
+                    else if(queue.normal_game_125.peek() == data.nick){
+                        queue.normal_game_125.dequeue()
+                    }
+                    else{
+                        console.log(data.nick + " wasnt in queue");
+                    }
+                }
+                responses[gh] = undefined;
+                res.end(JSON.stringify({}));
             });
         }
         else if(req.url == '/notify'){
@@ -218,14 +274,12 @@ const requestListener = function (req, res) {
                         active_game.p2board,
                         active_game.p2warehouse,
                         active_game.p1board.length);
-                        console.log("board: " + board);
                         pmres = manager.process_move(
                             board,
                             (active_game.p1board.length<<1) - move,
                             active_game.p1board[move],
                             active_game.p1board.length<<1);
-                        console.log("board: " + board);
-                        update.update_players(
+                        update.update_players_game(
                             responses,
                             notify_data.game,
                             active_game.player1,
@@ -241,14 +295,12 @@ const requestListener = function (req, res) {
                         active_game.p1board,
                         active_game.p1warehouse,
                         active_game.p2board.length);
-                        console.log("board: " + board);
                         pmres = manager.process_move(
                             board,
                             (active_game.p2board.length<<1) - move,
                             active_game.p2board[move],
                             active_game.p2board.length<<1);
-                        console.log("board: " + board);
-                        update.update_players(
+                        update.update_players_game(
                             responses,
                             notify_data.game,
                             active_game.player2,

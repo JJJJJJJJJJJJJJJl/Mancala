@@ -1,10 +1,18 @@
-const update_players = (responses, gamehash, p1, p2, game, board, switch_turn) => {
+const update_players_end = (responses, gamehash, winner) => {
+    if(responses[gamehash] != undefined){
+        for(let i=0; i<responses[gamehash].length; i++){
+            const stream = responses[gamehash][i];
+            console.log("i: " + i + " " +stream);
+            stream.write("id: " + Date.now() + `\ndata: ${JSON.stringify({winner: [winner]})}` + '\n\n');
+            stream.end();
+        }
+    }
+}
+
+const update_players_game = (responses, gamehash, p1, p2, game, board, switch_turn) => {
     if(board != undefined){
         const size = game.p1board.length;
         //holes
-        console.log("BEFORE");
-        console.log("p1board: " + game.p1board);
-        console.log("p2board: " + game.p2board);
         for(let i=0, j=size<<1, k=size-1; i<size, j>size, k>-1; i++, j--, k--){
             if(game.player1 == p1){
                 game.p1board[i] = board[j];
@@ -15,8 +23,6 @@ const update_players = (responses, gamehash, p1, p2, game, board, switch_turn) =
                 game.p1board[i] = board[k];
             }
         }
-        console.log("p1board: " + game.p1board);
-        console.log("p2board: " + game.p2board);
         //warehouses
         if(game.player1 == p1){
             game.p1warehouse = board[size];
@@ -61,5 +67,6 @@ const update_players = (responses, gamehash, p1, p2, game, board, switch_turn) =
 }
 
 module.exports = {
-    update_players,
+    update_players_end,
+    update_players_game,
 }

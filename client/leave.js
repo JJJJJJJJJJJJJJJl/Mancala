@@ -7,9 +7,10 @@ const leave = () => {
         return res.json();
     })
     .then(data => {
-        if(game_hash == undefined && Object.keys(data).length == 1){
-            leave_queue();
+        if(current_game != undefined){
+            current_game.close();
         }
+        clean_status();
         game_hash = undefined;
     })
     .catch(err => {
@@ -26,7 +27,14 @@ const leave_option = () => {
 
     leave_button.onclick = () => {
         leave();
+        remove_leave_button();
     };
-
     container.appendChild(leave_button);
+}
+
+const remove_leave_button = () => {
+    const leave_butt = document.getElementById("leave_button");
+    if(leave_butt != undefined){
+        leave_butt.parentNode.removeChild(leave_butt);
+    }
 }

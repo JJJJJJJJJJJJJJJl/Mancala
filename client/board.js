@@ -98,8 +98,10 @@ const init_game = async () => {
 }
 
 const clean_div = (container) => {
-    while(container.hasChildNodes()){
-        container.removeChild(container.firstChild);
+    if(container != undefined){
+        while(container.hasChildNodes()){
+            container.removeChild(container.firstChild);
+        }
     }
 }
 
