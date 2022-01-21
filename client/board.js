@@ -1,8 +1,3 @@
-//best leaf node found
-let best;
-//next ai move
-let ai_hole;
-
 //game object
 let game;
 
@@ -308,6 +303,10 @@ const lock_holes = () => {
     }
 }
 
+//best leaf node found
+let best;
+//next ai move
+let ai_hole;
 const calculate_ai_move = (depth) => {
     best = -999999;
     let move;
