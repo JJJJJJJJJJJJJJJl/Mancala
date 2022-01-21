@@ -56,12 +56,12 @@ const get_user_id = (usernames, target) => {
 }
 
 const update_players_record = (p1, p2,  winner) => {
-    console.log(users_file);
     let p1_id = get_user_id(users_file.usernames, p1);
     let p2_id = get_user_id(users_file.usernames, p2);
 
     if(winner == "draw"){
-
+        users_file.games[p1_id] = parseInt(users_file.games[p1_id]) + 1;
+        users_file.games[p2_id] = parseInt(users_file.games[p2_id]) + 1;
     }
     else if(winner == p1){
         if(p1_id != -1){
@@ -407,6 +407,34 @@ const requestListener = function (req, res) {
                 }
             });
             res.end('nice move');
+        }
+        else if(req.url == '/ranking'){
+            let naked = [];
+            const size = Object.keys(users_file.games).length;
+            const rev_comp = (j, k) => {
+                if(j.victories > k.victories) return -1;
+                else if(j.victories < k.victories) return 1;
+                else{
+                    if(j.games > k.games) return 1;
+                    else if(j.games < k.games) return -1;
+                    else return 0;
+                }
+            }
+            for(let i=1; i<=size; i++){
+                naked.push({
+                    nick: users_file.usernames[i],
+                    victories: users_file.wins[i],
+                    games: users_file.games[i]}
+                );
+            }
+            naked.sort(rev_comp);
+            let leaderboard = [];
+            for(let i=0; i<10; i++){
+                leaderboard.push(naked[i]);
+            }
+            console.log(leaderboard);
+            res.writeHead(200, headers);
+            res.end(JSON.stringify({ranking: leaderboard}));
         }
         else{
             res.writeHead(400);

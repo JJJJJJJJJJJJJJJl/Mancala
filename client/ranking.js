@@ -7,7 +7,6 @@ const ranking = () => {
         return res.json();
     })
     .then(data => {
-        console.log(data.ranking);
         display_ranking(data.ranking);
     })
     .catch(err => {
@@ -41,15 +40,17 @@ const display_ranking = (array) => {
     
     
     for(let i=0; i<array.length; i++){
-        const player_nick = document.createElement("p");
-        player_nick.innerText = array[i].nick;
-        nicks.appendChild(player_nick);
-        const player_wins = document.createElement("p");
-        player_wins.innerText = array[i].victories;
-        wins.appendChild(player_wins);
-        const player_games = document.createElement("p");
-        player_games.innerText = array[i].games;
-        games.appendChild(player_games);
+        if(array[i] != undefined){
+            const player_nick = document.createElement("p");
+            player_nick.innerText = array[i].nick;
+            nicks.appendChild(player_nick);
+            const player_wins = document.createElement("p");
+            player_wins.innerText = array[i].victories;
+            wins.appendChild(player_wins);
+            const player_games = document.createElement("p");
+            player_games.innerText = array[i].games;
+            games.appendChild(player_games);
+        }
     }
 
     container.appendChild(nicks);
