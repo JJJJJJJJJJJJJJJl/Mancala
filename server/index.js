@@ -45,6 +45,17 @@ const read_curid = () => {
 }
 read_curid();
 
+const update_players_record = () => {
+    fs.readFile("users.json")
+    .then(content => {
+        users_file = JSON.parse(content);
+        console.log(users_file);
+    }).catch(err => {
+        console.error(err);
+        //process.exit(1);
+    });
+}
+
 /* SERVER LOGIC */
 const requestListener = function (req, res) {
     if(req.method == 'GET'){
@@ -267,18 +278,28 @@ const requestListener = function (req, res) {
                 const active_game = active_games[notify_data.game];
                 let board;
                 let pmres;
+                let check;
                 if(active_game.player1 == notify_data.nick){
                     board = manager.generate_board(
                         active_game.p1board,
                         active_game.p1warehouse,
                         active_game.p2board,
                         active_game.p2warehouse,
-                        active_game.p1board.length);
-                        pmres = manager.process_move(
-                            board,
-                            (active_game.p1board.length<<1) - move,
-                            active_game.p1board[move],
-                            active_game.p1board.length<<1);
+                        active_game.p1board.length
+                    );
+                    pmres = manager.process_move(
+                        board,
+                        (active_game.p1board.length<<1) - move,
+                        active_game.p1board[move],
+                        active_game.p1board.length<<1
+                    );
+                    check = manager.check_board(board,
+                        active_game.p1board,
+                        active_game.p2board,
+                        active_game.p1board.length,
+                        pmres
+                    );
+                    if(check == 0){
                         update.update_players_game(
                             responses,
                             notify_data.game,
@@ -286,7 +307,20 @@ const requestListener = function (req, res) {
                             active_game.player2,
                             active_games[notify_data.game],
                             board,
-                            pmres);
+                            pmres
+                        );
+                    }
+                    else{
+                        if(check == 3){
+                            update.update_players_end(responses, notify_data.game, "draw");
+                        }
+                        else{
+                            const winner = check == 1 ? active_game.player1 : active_game.player2;
+                            update.update_players_end(responses, notify_data.game, winner);
+                        }
+                        active_games[notify_data.game] = undefined;
+                        responses[notify_data.game] = undefined;
+                    }
                 }
                 else{
                     board = manager.generate_board(
@@ -294,12 +328,21 @@ const requestListener = function (req, res) {
                         active_game.p2warehouse,
                         active_game.p1board,
                         active_game.p1warehouse,
-                        active_game.p2board.length);
-                        pmres = manager.process_move(
-                            board,
-                            (active_game.p2board.length<<1) - move,
-                            active_game.p2board[move],
-                            active_game.p2board.length<<1);
+                        active_game.p2board.length
+                    );
+                    pmres = manager.process_move(
+                        board,
+                        (active_game.p2board.length<<1) - move,
+                        active_game.p2board[move],
+                        active_game.p2board.length<<1
+                    );
+                    check = manager.check_board(board,
+                        active_game.p2board,
+                        active_game.p1board,
+                        active_game.p2board.length,
+                        pmres
+                    );
+                    if(check == 0){
                         update.update_players_game(
                             responses,
                             notify_data.game,
@@ -307,7 +350,20 @@ const requestListener = function (req, res) {
                             active_game.player1,
                             active_games[notify_data.game],
                             board,
-                            pmres);
+                            pmres
+                        );
+                    }
+                    else{
+                        if(check == 3){
+                            update.update_players_end(responses, notify_data.game, "draw");
+                        }
+                        else{
+                            const winner = check == 1 ? active_game.player2 : active_game.player1;
+                            update.update_players_end(responses, notify_data.game, winner);
+                        }
+                        active_games[notify_data.game] = undefined;
+                        responses[notify_data.game] = undefined;
+                    }
                 }
             });
             res.end('nice move');

@@ -39,13 +39,16 @@ const get_opp = (data) => {
 }
 
 const show_game_result = (data) => {
-    console.log("data winner: " + data.winner);
-    console.log("opp: " + opp);
-    if(data.winner == opp){
-        ogstatus.innerText = data.winner + " won! just go next man";
+    if(data.winner == "draw"){
+        ogstatus.innerText = "Draw"
     }
     else{
-        ogstatus.innerText = "Congratz you won!"
+        if(data.winner == opp){
+            ogstatus.innerText = data.winner + " won! just go next man";
+        }
+        else{
+            ogstatus.innerText = "Congratz you won!"
+        }
     }
     document.getElementById("playing").innerText = "";
 }

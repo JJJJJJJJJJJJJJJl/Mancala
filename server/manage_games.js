@@ -54,6 +54,53 @@ const generate_board = (p1_side, p1_warehouse, p2_side, p2_warehouse, holes) => 
     return board;
 }
 
+const check_board = (board, p1, p2, holes, switch_turn) => {
+    let p1_pieces = 0;
+    let p2_pieces = 0;
+    for(let i=0, j=holes<<1; i<holes, j>holes; i++, j--){
+        p1_pieces += board[j];
+        p2_pieces += board[i];
+    }
+    if(p1_pieces + p2_pieces == 0){
+        if(board[holes] > board[(holes<<1)+1]){
+            return 1;
+        }
+        else if(board[holes] < board[(holes<<1)+1]){
+            return 2;
+        }
+        else{
+            //draw
+            return 3;
+        }
+    }
+    else if(p1_pieces == 0 && switch_turn == 0){
+        if(board[holes] > board[(holes<<1)+1] + p2_pieces){
+            return 1;
+        }
+        else if(board[holes] < board[(holes<<1)+1] + p2_pieces){
+            return 2;
+        }
+        else{
+            return 3;
+        }
+    }
+    else if(p2_pieces == 0 && switch_turn == 1){
+        if(board[holes] + p1_pieces > board[(holes<<1)+1]){
+            return 1;
+        }
+        else if(board[holes] + p1_pieces < board[(holes<<1)+1]){
+            return 2;
+        }
+        else{
+            return 3;
+        }
+    }
+    else{
+        //game proceeds
+        return 0;
+    }
+}
+
 const process_move = (board, hole_id, hole_value, holes_number) => {
     let switch_player = 1;
     let cur_hole = parseInt(hole_id) == 0 ? holes_number + 1 : parseInt(hole_id) - 1;
@@ -112,6 +159,7 @@ const process_move = (board, hole_id, hole_value, holes_number) => {
 module.exports = {
     find_game_player,
     remove_game,
+    check_board,
     process_move,
     generate_board,
 }
