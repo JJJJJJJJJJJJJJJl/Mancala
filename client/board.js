@@ -89,7 +89,7 @@ const init_game = async () => {
     }
     else if(game.mode == 'online'){
         if(logged_username == "" || logged_password == ""){
-            document.getElementById("playing").innerText = "to play online you must insert both nickname and password";
+            document.getElementById("online_game_status").innerText = "to play online you must insert both nickname and password";
             return;
         }
         join_game(777, logged_username, logged_password, game.holes_number, game.holes_value);

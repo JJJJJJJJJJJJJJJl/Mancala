@@ -1,10 +1,3 @@
-const game_size = {
-    g103: 'normal_game_10_3',
-    g105: 'normal_game_10_5',
-    g123: 'normal_game_12_3',
-    g125: 'normal_game_12_5',
-}
-
 class Queue{
     constructor(){
         this.queue = [];
@@ -37,6 +30,24 @@ class Queue{
     }
 }
 
+const leave_queue = (user) => {
+    if(normal_game_103.peek() == user){
+        normal_game_103.dequeue()
+    }
+    else if(normal_game_105.peek() == user){
+        normal_game_105.dequeue()
+    }
+    else if(normal_game_123.peek() == user){
+        normal_game_123.dequeue()
+    }
+    else if(normal_game_125.peek() == user){
+        normal_game_125.dequeue()
+    }
+    else{
+        console.log(data.nick + " wasnt in queue");
+    }
+}
+
 let normal_game_103 = new Queue();
 let normal_game_105 = new Queue();
 let normal_game_123 = new Queue();
@@ -47,4 +58,5 @@ module.exports = {
     normal_game_105,
     normal_game_123,
     normal_game_125,
+    leave_queue,
 }

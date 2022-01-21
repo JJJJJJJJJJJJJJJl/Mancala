@@ -189,6 +189,10 @@ body {
     float: left;
 }
 
+#leave_queue:hover{
+    cursor: pointer;
+}
+
 #clean_board:hover{
     cursor: pointer;
 }

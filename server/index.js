@@ -45,15 +45,44 @@ const read_curid = () => {
 }
 read_curid();
 
-const update_players_record = () => {
-    fs.readFile("users.json")
-    .then(content => {
-        users_file = JSON.parse(content);
-        console.log(users_file);
-    }).catch(err => {
-        console.error(err);
-        //process.exit(1);
-    });
+const get_user_id = (usernames, target) => {
+    const size = Object.keys(usernames).length;
+    for(let i=1; i<=size; i++){
+        if(usernames[i] == target){
+            return i;
+        }
+    }
+    return -1;
+}
+
+const update_players_record = (p1, p2,  winner) => {
+    console.log(users_file);
+    let p1_id = get_user_id(users_file.usernames, p1);
+    let p2_id = get_user_id(users_file.usernames, p2);
+
+    if(winner == "draw"){
+
+    }
+    else if(winner == p1){
+        if(p1_id != -1){
+            users_file.games[p1_id] = parseInt(users_file.games[p1_id]) + 1;
+            users_file.wins[p1_id] = parseInt(users_file.wins[p1_id]) + 1;
+        }
+        if(p2_id != -1){
+            users_file.games[p2_id] = parseInt(users_file.games[p2_id]) + 1;
+        }
+    }
+    else{
+        if(p1_id != -1){
+            users_file.games[p1_id] = parseInt(users_file.games[p1_id]) + 1;
+        }
+        if(p2_id != -1){
+            users_file.games[p2_id] = parseInt(users_file.games[p2_id]) + 1;
+            users_file.wins[p2_id] = parseInt(users_file.wins[p2_id]) + 1;
+        }
+    }
+    fs.writeFile("users.json", JSON.stringify(users_file));
+    read_users();
 }
 
 /* SERVER LOGIC */
@@ -216,7 +245,7 @@ const requestListener = function (req, res) {
                         }
                         else{
                             res.writeHead(400, headers);
-                            res.end(JSON.stringify({error: "maybe leave queue before requeue"}));
+                            res.end(JSON.stringify({error: `maybe <span id="leave_queue" style="color: rgba(255, 0, 128, 0.69)" onclick="leave()">leave</span> queue before requeue`}));
                         }
                     }
                     //enqueue player
@@ -244,26 +273,17 @@ const requestListener = function (req, res) {
                     active_games[gh].player2 : active_games[gh].player1;
 
                     update.update_players_end(responses, gh, winner);
+                    update_players_record(
+                        active_games[gh].player1,
+                        active_games[gh].player2,
+                        winner
+                    );
 
                     active_games[gh] = undefined;
                 }
                 //leave queue
                 else{
-                    if(queue.normal_game_103.peek() == data.nick){
-                        queue.normal_game_103.dequeue()
-                    }
-                    else if(queue.normal_game_105.peek() == data.nick){
-                        queue.normal_game_105.dequeue()
-                    }
-                    else if(queue.normal_game_123.peek() == data.nick){
-                        queue.normal_game_123.dequeue()
-                    }
-                    else if(queue.normal_game_125.peek() == data.nick){
-                        queue.normal_game_125.dequeue()
-                    }
-                    else{
-                        console.log(data.nick + " wasnt in queue");
-                    }
+                    queue.leave_queue(data.nick);
                 }
                 responses[gh] = undefined;
                 res.end(JSON.stringify({}));
@@ -313,10 +333,20 @@ const requestListener = function (req, res) {
                     else{
                         if(check == 3){
                             update.update_players_end(responses, notify_data.game, "draw");
+                            update_players_record(
+                                active_games.player1,
+                                active_games.player2,
+                                "draw"
+                            );
                         }
                         else{
                             const winner = check == 1 ? active_game.player1 : active_game.player2;
                             update.update_players_end(responses, notify_data.game, winner);
+                            update_players_record(
+                                active_games.player1,
+                                active_games.player2,
+                                winner
+                            );
                         }
                         active_games[notify_data.game] = undefined;
                         responses[notify_data.game] = undefined;
@@ -356,10 +386,20 @@ const requestListener = function (req, res) {
                     else{
                         if(check == 3){
                             update.update_players_end(responses, notify_data.game, "draw");
+                            update_players_record(
+                                active_games.player1,
+                                active_games.player2,
+                                "draw"
+                            );
                         }
                         else{
                             const winner = check == 1 ? active_game.player2 : active_game.player1;
                             update.update_players_end(responses, notify_data.game, winner);
+                            update_players_record(
+                                active_games.player1,
+                                active_games.player2,
+                                winner
+                            );
                         }
                         active_games[notify_data.game] = undefined;
                         responses[notify_data.game] = undefined;

@@ -66,7 +66,7 @@ const start = (opp) => {
 }
 
 const join_error = (msg) => {
-    ogstatus.innerText = msg;
+    ogstatus.innerHTML = msg;
 }
 
 const clean_board_option = () => {
