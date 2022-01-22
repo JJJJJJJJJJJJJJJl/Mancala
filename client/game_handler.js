@@ -39,7 +39,7 @@ const get_opp = (data) => {
 }
 
 const show_game_result = (data) => {
-    if(data.winner == "draw"){
+    if(data.winner == null){
         ogstatus.innerText = "Draw"
     }
     else{

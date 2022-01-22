@@ -332,7 +332,7 @@ const requestListener = function (req, res) {
                     }
                     else{
                         if(check == 3){
-                            update.update_players_end(responses, notify_data.game, "draw");
+                            update.update_players_end(responses, notify_data.game, null);
                             update_players_record(
                                 active_games.player1,
                                 active_games.player2,
@@ -385,7 +385,7 @@ const requestListener = function (req, res) {
                     }
                     else{
                         if(check == 3){
-                            update.update_players_end(responses, notify_data.game, "draw");
+                            update.update_players_end(responses, notify_data.game, null);
                             update_players_record(
                                 active_games.player1,
                                 active_games.player2,
@@ -432,7 +432,6 @@ const requestListener = function (req, res) {
             for(let i=0; i<10; i++){
                 leaderboard.push(naked[i]);
             }
-            console.log(leaderboard);
             res.writeHead(200, headers);
             res.end(JSON.stringify({ranking: leaderboard}));
         }
