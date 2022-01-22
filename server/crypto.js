@@ -6,6 +6,11 @@ const generate_game_hash = (hn, hv, nick) => {
     return final;
 }
 
+const hash_pw = (pw) => {
+    return crypto.createHash('sha256').update(pw).digest('hex');
+}
+
 module.exports = {
     generate_game_hash,
+    hash_pw,
 }

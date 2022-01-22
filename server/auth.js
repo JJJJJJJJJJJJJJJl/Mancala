@@ -16,7 +16,7 @@ const find = (json, target) => {
     return -1;
 }
 
-const check_login = (json, target_user, target_pw) => {
+const auth_user = (json, target_user, target_pw) => {
     const user_id = find(json, target_user);
     if(json.passwords[user_id] == target_pw){
         return user_id;
@@ -27,5 +27,5 @@ const check_login = (json, target_user, target_pw) => {
 module.exports = {
     check_username,
     find,
-    check_login,
+    auth_user,
 }

@@ -3,7 +3,7 @@ const http = require('http');
 const fs = require('fs').promises;
 const auth = require('./auth');
 const queue = require('./queue');
-const game_hash = require('./crypto');
+const crypto = require('./crypto');
 const manager = require('./manage_games');
 const update = require('./update');
 
@@ -155,7 +155,6 @@ const requestListener = function (req, res) {
     else if(req.method == 'POST'){
         console.log(req.url);
         if(req.url == "/register"){
-            console.log("register");
             read_users();
             read_curid();
             req.on('data', (chunk) => {
@@ -170,7 +169,8 @@ const requestListener = function (req, res) {
                 }
                 else{
                     users_file.usernames[id_file + 1] = data.nick;
-                    users_file.passwords[id_file + 1] = data.password;
+                    const hashed_pw = crypto.hash_pw(data.password);
+                    users_file.passwords[id_file + 1] = hashed_pw;
                     users_file.wins[id_file + 1] = 0;
                     users_file.games[id_file + 1] = 0;
                     fs.writeFile("id.txt", (id_file + 1).toString());
@@ -192,7 +192,7 @@ const requestListener = function (req, res) {
                     res.writeHead(400, headers);
                     res.end(JSON.stringify({error: "username does not exist"}));
                 }
-                else if(auth.check_login(users_file, data.username, data.password) == -1){
+                else if(auth.auth_user(users_file, data.username, crypto.hash_pw(data.password)) == -1){
                     res.writeHead(400, headers); 
                     res.end(JSON.stringify({error: "wrong password"}));
                 }
@@ -207,7 +207,7 @@ const requestListener = function (req, res) {
             let hole_value;
             req.on('data', (chunk) => {
                 data = JSON.parse(chunk);
-                if(auth.check_login(users_file, data.nick, data.password) == -1){
+                if(auth.auth_user(users_file, data.nick, crypto.hash_pw(data.password)) == -1){
                     res.writeHead(400, headers);
                     res.end(JSON.stringify({error: 'invalid user values'}));
                 }
@@ -251,7 +251,7 @@ const requestListener = function (req, res) {
                     //enqueue player
                     else{
                         //generate game hash
-                        let ghash = game_hash.generate_game_hash(data.size, data.initial, data.nick);
+                        let ghash = crypto.generate_game_hash(data.size, data.initial, data.nick);
                         responses[ghash] = new Array();
                         q.enqueue(data.nick, ghash);
                         res.writeHead(200, headers);
