@@ -619,6 +619,7 @@ const on_hole_click = (board, hole_id, entity) => {
         check_board(board, 1);
         if(game.on == 0) document.getElementById("playing").innerText = "";
     }
+    console.log("board: " + board);
 }
 
 const set_playing = (entity) => {
@@ -680,13 +681,19 @@ const check_board = (board, entity) => {
             if(entity == 420) return 0;
             else{
                 game.on = 0;
+                if(game.mode == 'ai' || game.mode == 'jjjjjj_ai'){
+                    update_results_ai_games(null, null);
+                }
                 alert("Draw");
             }
         }
         else if(left_warehouse_value > right_warehouse_value){
             if(entity == 420) return 2;
             else{
-                game.on = 0;  
+                game.on = 0;
+                if(game.mode == 'ai' || game.mode == 'jjjjjj_ai'){
+                    update_results_ai_games(game.mode, "user");
+                }
                 alert(game.player2 + " won");
             }
         }
@@ -694,6 +701,9 @@ const check_board = (board, entity) => {
             if(entity == 420) return 1;
             else{
                 game.on = 0;
+                if(game.mode == 'ai' || game.mode == 'jjjjjj_ai'){
+                    update_results_ai_games("user", game.mode);
+                }
                 alert(game.player1 + " won");
             }
         }
@@ -727,6 +737,9 @@ const check_board = (board, entity) => {
             if(entity == 420) return 1;
             else{
                 game.on = 0;
+                if(game.mode == 'ai' || game.mode == 'jjjjjj_ai'){
+                    update_results_ai_games("user", game.mode);
+                }
                 alert(game.player1 + " won");
             }
         }
@@ -734,6 +747,9 @@ const check_board = (board, entity) => {
             if(entity == 420) return 2;
             else{
                 game.on = 0;
+                if(game.mode == 'ai' || game.mode == 'jjjjjj_ai'){
+                    update_results_ai_games(game.mode, "user");
+                }
                 alert(game.player2 + " won");
             }
         }
@@ -741,6 +757,9 @@ const check_board = (board, entity) => {
             if(entity == 420) return 0;
             else{
                 game.on = 0;
+                if(game.mode == 'ai' || game.mode == 'jjjjjj_ai'){
+                    update_results_ai_games(null, null);
+                }
                 alert("Draw");
             }
         }
@@ -775,6 +794,9 @@ const check_board = (board, entity) => {
             if(entity == 420) return 1;
             else{
                 game.on = 0;
+                if(game.mode == 'ai' || game.mode == 'jjjjjj_ai'){
+                    update_results_ai_games("user", game.mode);
+                }
                 alert(game.player1 + " won");
             }
         }
@@ -782,6 +804,9 @@ const check_board = (board, entity) => {
             if(entity == 420) return 2;
             else{
                 game.on = 0;
+                if(game.mode == 'ai' || game.mode == 'jjjjjj_ai'){
+                    update_results_ai_games(game.mode, "user");
+                }
                 alert(game.player2 + " won");
             }
         }
@@ -789,6 +814,9 @@ const check_board = (board, entity) => {
             if(entity == 420) return 0;
             else{
                 game.on = 0;
+                if(game.mode == 'ai' || game.mode == 'jjjjjj_ai'){
+                    update_results_ai_games(null, null);
+                }
                 alert("Draw");
             }
         }
