@@ -619,7 +619,6 @@ const on_hole_click = (board, hole_id, entity) => {
         check_board(board, 1);
         if(game.on == 0) document.getElementById("playing").innerText = "";
     }
-    console.log("board: " + board);
 }
 
 const set_playing = (entity) => {
