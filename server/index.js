@@ -9,12 +9,11 @@ const update = require('./update');
 
 /* SERVER STATE */
 let data;
-
 let users_file;
 let id_file;
-
 let active_games = [];
 let responses = [];
+const timeout = 120 * 1000;
 
 const headers = {
     "Access-Control-Allow-Origin": "*",
@@ -239,7 +238,20 @@ const requestListener = function (req, res) {
                                     p2board: player2_board,
                                     p2warehouse: 0,
                                     turn: player_ready.username,
-                                    game_queue: q};
+                                    game_queue: q,
+                                    timeout: setTimeout(() => {
+                                        update.update_players_end(
+                                            responses,
+                                            player_ready.game_hash,
+                                            data.nick);
+                                        update_players_record(
+                                            player_ready.username,
+                                            data.nick,
+                                            data.nick
+                                        );
+                                        active_games[player_ready.game_hash] = undefined;
+                                        responses[player_ready.game_hash] = undefined;
+                                    },timeout)};
                             res.writeHead(200, headers);
                             res.end(JSON.stringify({game: player_ready.game_hash, status: "matched", opp: player_ready.username}));
                         }
@@ -295,114 +307,135 @@ const requestListener = function (req, res) {
                 const notify_data = JSON.parse(chunk);
                 const move = notify_data.move;
                 const active_game = active_games[notify_data.game];
-                let board;
-                let pmres;
-                let check;
-                if(active_game.player1 == notify_data.nick){
-                    board = manager.generate_board(
-                        active_game.p1board,
-                        active_game.p1warehouse,
-                        active_game.p2board,
-                        active_game.p2warehouse,
-                        active_game.p1board.length
-                    );
-                    pmres = manager.process_move(
-                        board,
-                        (active_game.p1board.length<<1) - move,
-                        active_game.p1board[move],
-                        active_game.p1board.length<<1
-                    );
-                    check = manager.check_board(board,
-                        active_game.p1board,
-                        active_game.p2board,
-                        active_game.p1board.length,
-                        pmres
-                    );
-                    if(check == 0){
-                        update.update_players_game(
-                            responses,
-                            notify_data.game,
-                            active_game.player1,
-                            active_game.player2,
-                            active_games[notify_data.game],
-                            board,
-                            pmres
-                        );
-                    }
-                    else{
-                        if(check == 3){
-                            update.update_players_end(responses, notify_data.game, null);
-                            update_players_record(
-                                active_game.player1,
-                                active_game.player2,
-                                "draw"
-                            );
-                        }
-                        else{
-                            const winner = check == 1 ? active_game.player1 : active_game.player2;
-                            update.update_players_end(responses, notify_data.game, winner);
-                            update_players_record(
-                                active_game.player1,
-                                active_game.player2,
-                                winner
-                            );
-                        }
-                        active_games[notify_data.game] = undefined;
-                        responses[notify_data.game] = undefined;
-                    }
+                if(active_game == undefined){
+                    res.end(JSON.stringify({error: "game does not exist"}));
                 }
                 else{
-                    board = manager.generate_board(
-                        active_game.p2board,
-                        active_game.p2warehouse,
-                        active_game.p1board,
-                        active_game.p1warehouse,
-                        active_game.p2board.length
-                    );
-                    pmres = manager.process_move(
-                        board,
-                        (active_game.p2board.length<<1) - move,
-                        active_game.p2board[move],
-                        active_game.p2board.length<<1
-                    );
-                    check = manager.check_board(board,
-                        active_game.p2board,
-                        active_game.p1board,
-                        active_game.p2board.length,
-                        pmres
-                    );
-                    if(check == 0){
-                        update.update_players_game(
-                            responses,
-                            notify_data.game,
-                            active_game.player2,
-                            active_game.player1,
-                            active_games[notify_data.game],
+                    clearTimeout(active_game.timeout);
+                    let board;
+                    let pmres;
+                    let check;
+                    if(active_game.player1 == notify_data.nick){
+                        board = manager.generate_board(
+                            active_game.p1board,
+                            active_game.p1warehouse,
+                            active_game.p2board,
+                            active_game.p2warehouse,
+                            active_game.p1board.length
+                        );
+                        pmres = manager.process_move(
                             board,
+                            (active_game.p1board.length<<1) - move,
+                            active_game.p1board[move],
+                            active_game.p1board.length<<1
+                        );
+                        check = manager.check_board(board,
+                            active_game.p1board,
+                            active_game.p2board,
+                            active_game.p1board.length,
                             pmres
                         );
-                    }
-                    else{
-                        if(check == 3){
-                            update.update_players_end(responses, notify_data.game, null);
-                            update_players_record(
+                        if(check == 0){
+                            update.update_players_game(
+                                responses,
+                                notify_data.game,
                                 active_game.player1,
                                 active_game.player2,
-                                "draw"
+                                active_games[notify_data.game],
+                                board,
+                                pmres
                             );
                         }
                         else{
-                            const winner = check == 1 ? active_game.player2 : active_game.player1;
-                            update.update_players_end(responses, notify_data.game, winner);
-                            update_players_record(
-                                active_game.player1,
+                            if(check == 3){
+                                update.update_players_end(responses, notify_data.game, null);
+                                update_players_record(
+                                    active_game.player1,
+                                    active_game.player2,
+                                    "draw"
+                                );
+                            }
+                            else{
+                                const winner = check == 1 ? active_game.player1 : active_game.player2;
+                                update.update_players_end(responses, notify_data.game, winner);
+                                update_players_record(
+                                    active_game.player1,
+                                    active_game.player2,
+                                    winner
+                                );
+                            }
+                            active_games[notify_data.game] = undefined;
+                            responses[notify_data.game] = undefined;
+                        }
+                    }
+                    else{
+                        board = manager.generate_board(
+                            active_game.p2board,
+                            active_game.p2warehouse,
+                            active_game.p1board,
+                            active_game.p1warehouse,
+                            active_game.p2board.length
+                        );
+                        pmres = manager.process_move(
+                            board,
+                            (active_game.p2board.length<<1) - move,
+                            active_game.p2board[move],
+                            active_game.p2board.length<<1
+                        );
+                        check = manager.check_board(board,
+                            active_game.p2board,
+                            active_game.p1board,
+                            active_game.p2board.length,
+                            pmres
+                        );
+                        if(check == 0){
+                            update.update_players_game(
+                                responses,
+                                notify_data.game,
                                 active_game.player2,
-                                winner
+                                active_game.player1,
+                                active_games[notify_data.game],
+                                board,
+                                pmres
                             );
                         }
+                        else{
+                            if(check == 3){
+                                update.update_players_end(responses, notify_data.game, null);
+                                update_players_record(
+                                    active_game.player1,
+                                    active_game.player2,
+                                    "draw"
+                                );
+                            }
+                            else{
+                                const winner = check == 1 ? active_game.player2 : active_game.player1;
+                                update.update_players_end(responses, notify_data.game, winner);
+                                update_players_record(
+                                    active_game.player1,
+                                    active_game.player2,
+                                    winner
+                                );
+                            }
+                            active_games[notify_data.game] = undefined;
+                            responses[notify_data.game] = undefined;
+                        }
+                    }
+                    active_game.timeout = setTimeout(() => {
+                        update.update_players_end(
+                            responses,
+                            notify_data.game,
+                            active_game.turn == active_game.player1 ?
+                            active_game.player2 : active_game.player1);
+                        update_players_record(
+                            active_game.player1,
+                            active_game.player2,
+                            active_game.turn == active_game.player1 ?
+                            active_game.player2 : active_game.player1
+                        );
                         active_games[notify_data.game] = undefined;
                         responses[notify_data.game] = undefined;
-                    }
+                    },timeout)
                 }
             });
             res.end('nice move');
