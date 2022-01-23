@@ -291,7 +291,6 @@ const requestListener = function (req, res) {
         }
         else if(req.url == '/notify'){
             res.writeHead(200, headers);
-            console.log("NOTIFY");
             req.on('data', (chunk) => {
                 const notify_data = JSON.parse(chunk);
                 const move = notify_data.move;
@@ -334,8 +333,8 @@ const requestListener = function (req, res) {
                         if(check == 3){
                             update.update_players_end(responses, notify_data.game, null);
                             update_players_record(
-                                active_games.player1,
-                                active_games.player2,
+                                active_game.player1,
+                                active_game.player2,
                                 "draw"
                             );
                         }
@@ -343,8 +342,8 @@ const requestListener = function (req, res) {
                             const winner = check == 1 ? active_game.player1 : active_game.player2;
                             update.update_players_end(responses, notify_data.game, winner);
                             update_players_record(
-                                active_games.player1,
-                                active_games.player2,
+                                active_game.player1,
+                                active_game.player2,
                                 winner
                             );
                         }
@@ -387,8 +386,8 @@ const requestListener = function (req, res) {
                         if(check == 3){
                             update.update_players_end(responses, notify_data.game, null);
                             update_players_record(
-                                active_games.player1,
-                                active_games.player2,
+                                active_game.player1,
+                                active_game.player2,
                                 "draw"
                             );
                         }
@@ -396,8 +395,8 @@ const requestListener = function (req, res) {
                             const winner = check == 1 ? active_game.player2 : active_game.player1;
                             update.update_players_end(responses, notify_data.game, winner);
                             update_players_record(
-                                active_games.player1,
-                                active_games.player2,
+                                active_game.player1,
+                                active_game.player2,
                                 winner
                             );
                         }
